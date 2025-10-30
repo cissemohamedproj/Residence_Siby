@@ -7,6 +7,7 @@ const clientRoute = require('./routes/ClientRoute');
 const contratRoute = require('./routes/ContratRoute');
 const rentalRoute = require('./routes/RentalRoute');
 const paiementRoute = require('./routes/PaiementRoute');
+const comissionRoute = require('./routes/ComissionRoute');
 const depenseRoute = require('./routes/DepenseRoute');
 
 const nodemailer = require('nodemailer');
@@ -58,6 +59,9 @@ app.use('/api/rentals', rentalRoute);
 
 // Utilisation des routes Paiement
 app.use('/api/paiements', paiementRoute);
+
+// Utilisation des routes Comission
+app.use('/api/comissions', comissionRoute);
 
 // Utilisation des routes Depense
 app.use('/api/depenses', depenseRoute);
