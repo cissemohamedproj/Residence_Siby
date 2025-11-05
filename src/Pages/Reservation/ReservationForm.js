@@ -150,7 +150,11 @@ const ReservationForm = ({ reservationToEdit, clientId, tog_form_modal }) => {
       (filterAppartement.mounthPrice || 0) * mounthValue
     );
 
-    setMinimumTotalPaye(filterAppartement?.dayPrice);
+    const minValue =
+      filterAppartement?.heurePrice > 0
+        ? filterAppartement?.heurePrice
+        : filterAppartement?.dayPrice;
+    setMinimumTotalPaye(minValue);
     //  Nouveau total calculé
     const total = heurePrice + dayPrice + weekPrice + mounthPrice;
 
