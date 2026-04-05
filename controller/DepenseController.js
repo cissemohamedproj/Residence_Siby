@@ -56,6 +56,10 @@ exports.getAllDepenses = async (req, res) => {
     const depenses = await Depense.find()
       .populate('secteur')
       .populate('user')
+      .populate({
+        path: 'rental',
+        populate: { path: 'appartement' },
+      })
       .sort({ dateOfDepense: -1 });
     return res.status(200).json(depenses);
   } catch (error) {
@@ -68,8 +72,12 @@ exports.getDepenseById = async (req, res) => {
   try {
     const { id } = req.params;
     const depense = await Depense.findById(id)
-    .populate('secteur')
-    .populate('user');
+      .populate('secteur')
+      .populate('user')
+      .populate({
+        path: 'rental',
+        populate: { path: 'appartement' },
+      });
 
     if (!depense) {
       return res.status(404).json({ message: 'Dépense non trouvée.' });

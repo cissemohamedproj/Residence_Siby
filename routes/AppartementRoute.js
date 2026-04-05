@@ -28,4 +28,4 @@ router.delete('/deleteAppartement/:id', appartement.deleteAppartement);
 // Supprimer toutes les Appartement
 router.delete('/deleteAllAppartement', appartement.deleteAllAppartement);
 
-module.exports = router;
+module.exports = router;       
