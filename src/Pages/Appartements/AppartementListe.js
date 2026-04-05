@@ -118,8 +118,8 @@ export default function AppartementListe() {
                     {isLoading && <LoadingSpiner />}
 
                     <div
-                      className='table-responsive table-card mt-3 mb-1'
-                      style={{ minHeight: 350 }}
+                      className='table-responsive table-card rs-table-scroll mt-3 mb-1'
+                      style={{ minHeight: '350px' }}
                     >
                       {!filterAppartement?.length && !isLoading && !error && (
                         <div className='text-center text-mutate'>
@@ -130,7 +130,7 @@ export default function AppartementListe() {
                         filterAppartement?.length > 0 &&
                         !isLoading && (
                           <table
-                            className='table align-middle table-nowrap table-hover'
+                            className='table rs-data-table align-middle table-nowrap table-hover'
                             id='appartementTable'
                           >
                             <thead className='table-light'>

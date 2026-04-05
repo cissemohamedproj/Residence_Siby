@@ -76,27 +76,17 @@ const ReçuComission = ({ show_modal, tog_show_modal, selectedComission }) => {
       </div>
 
       {/* Modal Body */}
-      <div className='modal-body' ref={contentRef}>
+      <div className='modal-body rs-recu-modal-body' ref={contentRef}>
         <div
-          className='mx-5 py-3 d-flex justify-content-center'
+          className='mx-5 py-3 d-flex justify-content-center rs-recu-root'
           id='reçu_de_paiement'
         >
-          <Card
-            style={{
-              boxShadow: '0px 0px 10px rgba(100, 169, 238, 0.5)',
-              borderRadius: '15px',
-              width: '583px',
-              margin: '20px auto',
-              position: 'relative',
-              padding: '10px 0',
-              border: '2px solid #c222ab',
-            }}
-          >
+          <Card className='rs-recu-card'>
             <RecuHeader />
             <CardBody className='mt-2'>
               <h5 className='mb-4 text-center'>Reçue de Comission</h5>
 
-              <div className='d-flex justify-content-around align-items-center  px-2 '>
+              <div className='d-flex justify-content-around align-items-center px-2 rs-recu-two-col'>
                 <div>
                   <p>
                     {capitalizeWords(
@@ -109,10 +99,7 @@ const ReçuComission = ({ show_modal, tog_show_modal, selectedComission }) => {
                     {formatPhoneNumber(selectedComission?.client?.phoneNumber)}
                   </p>
                 </div>
-                <div
-                  className='border border-1 border-dark'
-                  style={{ width: '2px', height: '160px' }}
-                ></div>
+                <div className='rs-recu-divider' aria-hidden />
 
                 <div className='my-3'>
                   <p>

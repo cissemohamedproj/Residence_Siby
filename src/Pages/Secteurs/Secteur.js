@@ -73,8 +73,14 @@ export default function Secteur() {
               />
             }
           />
-          <h3 className='text-center'> Secteurs Disponible</h3>
-          <div className='d-flex flex-wrap gap-4 justify-content-center align-items-center'>
+          <header className='rs-secteur-hero'>
+            <h1>Secteurs disponibles</h1>
+            <p>
+              Choisissez un secteur pour consulter les appartements, contrats et
+              paiements associés.
+            </p>
+          </header>
+          <div className='rs-secteur-actions'>
             <Button
               color='info'
               onClick={() => {
@@ -82,11 +88,13 @@ export default function Secteur() {
                 tog_form_modal();
               }}
             >
-              Ajouter un Secteur
+              <i className='ri-add-line me-1' />
+              Ajouter un secteur
             </Button>
 
-            <Button onClick={() => logout()} color='danger'>
-              Déconnecter
+            <Button outline color='danger' onClick={() => logout()}>
+              <i className='ri-logout-box-r-line me-1' />
+              Déconnexion
             </Button>
           </div>
 
@@ -98,31 +106,19 @@ export default function Secteur() {
             </div>
           )}
           {secteurData?.length === 0 && (
-            <h5 className='text-center my-4'>Aucun Secteur Disponible </h5>
+            <h5 className='text-center my-4 text-white-50'>
+              Aucun secteur disponible
+            </h5>
           )}
 
           {loadingData && <LoadingSpiner />}
           {!dataError && !loadingData && (
-            <Row className='d-flex flex-wrap mt-4 gap-3 justify-content-center align-items-center'>
+            <Row className='row-cols-1 row-cols-md-2 row-cols-xl-3 g-4 mt-1 justify-content-center'>
               {secteurData?.length > 0 &&
                 secteurData?.map((item) => (
-                  <Col key={item?._id}>
-                    <Card
-                      style={{
-                        position: 'relative',
-                        padding: '10px 15px',
-                        border: '2px solid #f1fafeee ',
-                        boxShadow: '0 0 10px rgba(2, 48, 71, 0.37)',
-                        background: ' #023047',
-                      }}
-                    >
-                      <div
-                        style={{
-                          position: 'absolute',
-                          right: 10,
-                          top: 2,
-                        }}
-                      >
+                  <Col key={item?._id} className='d-flex justify-content-center'>
+                    <Card className='rs-secteur-card w-100'>
+                      <div className='position-absolute' style={{ right: 10, top: 8 }}>
                         {connectedUserRole === 'admin' && (
                           <UncontrolledDropdown className='dropdown d-inline-block'>
                             <DropdownToggle
@@ -162,11 +158,11 @@ export default function Secteur() {
                           </UncontrolledDropdown>
                         )}
                       </div>
-                      <h5 className='text-light'>
+                      <h5 className='text-light mb-3'>
                         Secteur N° {item?.secteurNumber}
                       </h5>
 
-                      <CardBody className='d-flex flex-column justify-content-center align-items-center text-light'>
+                      <CardBody className='d-flex flex-column justify-content-center align-items-center text-light pt-0'>
                         <h5 className='text-light'>
                           {capitalizeWords(item?.adresse)}
                         </h5>
@@ -191,7 +187,7 @@ export default function Secteur() {
                       </CardBody>
                       <CardFooter className='d-flex justify-content-end align-items-center'>
                         <Button
-                          className='text-end'
+                          className='px-3'
                           color='info'
                           onClick={() => {
                             localStorage.setItem(
@@ -201,7 +197,8 @@ export default function Secteur() {
                             navigate(`/secteur/${item?._id}`);
                           }}
                         >
-                          <i className=' fas fa-angle-double-right'></i>
+                          Ouvrir
+                          <i className='fas fa-angle-double-right ms-2'></i>
                         </Button>
                       </CardFooter>
                     </Card>

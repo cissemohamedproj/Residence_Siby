@@ -1,13 +1,16 @@
-import React, { useContext } from 'react';
-import { Container, Row, Col, Card, CardBody, Button } from 'reactstrap';
-
-// Formik Validation
-
-//redux
+import React, { useContext, useMemo } from 'react';
+import {
+  Container,
+  Row,
+  Col,
+  Card,
+  CardBody,
+  Button,
+  Badge,
+} from 'reactstrap';
 
 import withRouter from '../../components/Common/withRouter';
 
-//Import Breadcrumb
 import Breadcrumb from '../../components/Common/Breadcrumb';
 
 import {
@@ -17,82 +20,135 @@ import {
 } from './userInfos';
 import { AuthContext } from '../../Auth/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import { companyLogo, companyName } from '../CompanyInfo/CompanyInfo';
-// actions
+import { companyName } from '../CompanyInfo/CompanyInfo';
+
+function profileInitials(name) {
+  if (!name || typeof name !== 'string') return '?';
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+  if (parts.length === 0) return '?';
+  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+}
 
 const UserProfile = () => {
-  document.title = `Profile | ${companyName} `;
+  document.title = `Mon profil | ${companyName}`;
 
   const navigate = useNavigate();
-
   const { logout } = useContext(AuthContext);
 
-  // Inside your component
+  const initials = useMemo(
+    () => profileInitials(connectedUserName),
+    [connectedUserName]
+  );
+
+  const roleLabel =
+    connectedUserRole === 'admin' ? 'Administrateur' : 'Utilisateur';
 
   return (
     <React.Fragment>
       <div className='page-content'>
         <Container fluid>
-          <Breadcrumb title='Utilisateur' breadcrumbItem='Profile' />
+          <Breadcrumb title='Mon espace' breadcrumbItem='Profil' />
 
-          <Row>
-            <Col md='8' className='mx-auto'>
-              <Card>
-                <CardBody>
-                  <div className='d-flex align-items-center justify-content-around flex-column gap-3 p-3'>
-                    <div
-                      className='ms-3'
-                      style={{ width: '80px', height: '80px' }}
-                    >
-                      <img
-                        src={companyLogo}
-                        style={{
-                          width: '100%',
-                          height: '100%',
-                          objectFit: 'cover',
-                        }}
-                        alt=''
-                        className='avatar-md rounded-circle img-thumbnail'
+          <Row className='justify-content-center'>
+            <Col xs={12} lg={10} xl={7}>
+              <Card className='border-0 shadow-sm overflow-hidden rs-profile-card'>
+                <div className='rs-profile-header' aria-hidden />
+                <CardBody className='position-relative px-4 px-md-5 pb-4 pt-0'>
+                  <div className='rs-profile-avatar' aria-hidden>
+                    <span className='rs-profile-avatar__initials'>
+                      {initials}
+                    </span>
+                  </div>
+
+                  <div className='rs-profile-body text-center'>
+                    <h2 className='rs-profile-name mb-1'>
+                      {connectedUserName || 'Utilisateur'}
+                    </h2>
+                    <p className='rs-profile-brand text-muted small mb-3'>
+                      {companyName}
+                    </p>
+
+                    <div className='rs-profile-meta d-inline-flex flex-column flex-sm-row align-items-center justify-content-center gap-2 gap-sm-3 mb-4'>
+                      <span className='rs-profile-meta__item'>
+                        <i
+                          className='fas fa-envelope text-primary me-2'
+                          aria-hidden
+                        />
+                        <a
+                          href={
+                            connectedUserEmail
+                              ? `mailto:${connectedUserEmail}`
+                              : undefined
+                          }
+                          className='rs-profile-email'
+                        >
+                          {connectedUserEmail || '—'}
+                        </a>
+                      </span>
+                      <span
+                        className='rs-profile-meta__divider d-none d-sm-inline'
+                        aria-hidden
                       />
-                    </div>
-                    <div className='text-center'>
-                      <div className='text-muted'>
-                        <h5> {connectedUserName}</h5>
-                        <p className='mb-1'>{connectedUserEmail}</p>
-                        <h5 className='text-warning'>
-                          {' '}
-                          Rôle:{' '}
-                          {connectedUserRole === 'admin'
-                            ? 'Administrateur'
-                            : 'Utilisateur'}{' '}
-                        </h5>
-                      </div>
+                      <span className='rs-profile-meta__item'>
+                        <i
+                          className='fas fa-user-shield text-primary me-2'
+                          aria-hidden
+                        />
+                        <Badge
+                          pill
+                          className={`rs-profile-role-badge ${
+                            connectedUserRole === 'admin'
+                              ? 'rs-profile-role-badge--admin'
+                              : 'rs-profile-role-badge--user'
+                          }`}
+                        >
+                          {roleLabel}
+                        </Badge>
+                      </span>
                     </div>
 
-                    <div className='mt-4 d-flex justify-content-center align-items-center flex-wrap gap-4'>
+                    <div className='rs-profile-actions'>
                       {connectedUserRole === 'admin' && (
                         <Button
-                          color='secondary'
+                          color='primary'
+                          outline
+                          className='rs-profile-btn'
                           onClick={() => navigate('/register')}
                         >
-                          Créer un Compte
+                          <i className='fas fa-user-plus me-2' aria-hidden />
+                          Créer un compte
                         </Button>
                       )}
                       <Button
-                        color='secondary'
+                        color='primary'
+                        outline
+                        className='rs-profile-btn'
                         onClick={() => navigate('/usersProfileListe')}
                       >
-                        Liste des Utilisateurs
+                        <i className='fas fa-users me-2' aria-hidden />
+                        Liste des utilisateurs
                       </Button>
                       <Button
-                        color='secondary'
+                        color='primary'
+                        outline
+                        className='rs-profile-btn'
                         onClick={() => navigate('/updatePassword')}
                       >
-                        Changer mon mot de passe
+                        <i className='fas fa-key me-2' aria-hidden />
+                        Changer le mot de passe
                       </Button>
-
-                      <Button color='danger' onClick={() => logout()}>
-                        Se Déconnecter
+                      <Button
+                        color='danger'
+                        outline
+                        className='rs-profile-btn rs-profile-btn--logout'
+                        onClick={() => logout()}
+                      >
+                        <i
+                          className='fas fa-sign-out-alt me-2'
+                          aria-hidden
+                        />
+                        Se déconnecter
                       </Button>
                     </div>
                   </div>

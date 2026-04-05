@@ -15,7 +15,7 @@ import {
 import * as Yup from 'yup';
 import { useFormik } from 'formik';
 
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
 // import images
 import { useRegister } from '../../Api/queriesAuth';
@@ -97,13 +97,13 @@ const Register = () => {
   });
 
   return (
-    <div className='bg-pattern'>
-      <div className='bg-overlay'></div>
+    <div className='bg-login rs-auth-page'>
+      <div className='bg-overlay' />
       <div className='account-pages pt-5'>
         <Container>
           <Row className='justify-content-center'>
-            <Col lg={6} md={8} xl={4}>
-              <Card className='mt-5'>
+            <Col lg={6} md={8} xl={5}>
+              <Card className='mt-4 rs-auth-card'>
                 <CardBody className='px-3'>
                   <div className='text-center mb-4'>
                     <img
@@ -114,22 +114,10 @@ const Register = () => {
                       style={{ objectFit: 'cover' }}
                       className='auth-logo logo-dark mx-auto'
                     />
-                    <h2
-                      className=' mt-1 text-center'
-                      style={{ color: ' #00078e' }}
-                    >
+                    <h2 className='mt-2 text-center rs-auth-brand-title'>
                       {companyName}
                     </h2>
-                    <h6
-                      style={{
-                        color: ' #ffff',
-                        background: ' #00078e',
-                        padding: '5px',
-                        borderRadius: '5px',
-                      }}
-                    >
-                      {companyOwnerName}
-                    </h6>
+                    <h6 className='rs-auth-tagline'>{companyOwnerName}</h6>
                   </div>
 
                   <Form
@@ -228,7 +216,7 @@ const Register = () => {
                                 value={validation.values.password || ''}
                                 type={showPassword ? 'text' : 'password'}
                                 placeholder='Mot de Passe minimum (6) caractère'
-                                className='form-controle border-1 border-dark'
+                                className='form-control border-1 border-dark'
                                 onChange={validation.handleChange}
                                 onBlur={validation.handleBlur}
                                 invalid={
@@ -281,12 +269,17 @@ const Register = () => {
                 </CardBody>
               </Card>
               <div className='mt-5 text-center'>
-                <p className='text-white-50'>
+                <p className='rs-auth-credit rs-auth-credit--dark mb-0'>
                   © {new Date().getFullYear()} {companyName} {companyOwnerName}{' '}
-                  | <i className='mdi mdi-heart text-danger'></i> Créé Par{' '}
-                  <Link to={'https://www.cissemohamed.com'} target='blank'>
+                  | <i className='mdi mdi-heart text-danger'></i> Créé par{' '}
+                  <a
+                    href='https://www.mohamedcisse.com'
+                    target='_blank'
+                    rel='noopener noreferrer'
+                    className='rs-auth-credit__link'
+                  >
                     Cisse Mohamed
-                  </Link>
+                  </a>
                 </p>
               </div>
             </Col>

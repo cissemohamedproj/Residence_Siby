@@ -64,14 +64,14 @@ export default function ComissionListe() {
                     )}
                     {isLoading && <LoadingSpiner />}
 
-                    <div className='table-responsive table-card mt-3 mb-1'>
+                    <div className='table-responsive table-card rs-table-scroll mt-3 mb-1'>
                       {comissionsData?.length === 0 && (
                         <div className='text-center text-mutate'>
                           Aucune Comission trouver !
                         </div>
                       )}
                       {!error && !isLoading && comissionsData?.length > 0 && (
-                        <table className='table align-middle table-nowrap table-hover'>
+                        <table className='table rs-data-table align-middle table-nowrap table-hover'>
                           <thead className='table-light'>
                             <tr className='text-center'>
                               <th data-sort='paiementDate'>Date de Paiement</th>

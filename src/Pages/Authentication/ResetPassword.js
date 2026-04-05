@@ -95,9 +95,9 @@ const ResetPassword = () => {
   return (
     <div className='page-content'>
       <Container fluid>
-        <Row className='justify-content-center'>
-          <Col md={6}>
-            <Card>
+        <Row className='justify-content-center py-4'>
+          <Col md={6} lg={5}>
+            <Card className='rs-auth-card'>
               <CardBody>
                 <h4 className='mb-4 text-center'>
                   Rénitialisation de Mot de Passe

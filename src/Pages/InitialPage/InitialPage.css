@@ -1,113 +1,104 @@
 .initial-page {
+  position: relative;
   margin: 0;
-  font-family: 'Arial', sans-serif;
-  background: linear-gradient(
-    135deg,
-    #ff7eb3,
-    #ff758c,
-    #5a189a,
-    #00b4d8,
-    #240046
-  );
-  background-size: 400% 400%;
-  animation: gradientAnimation 15s ease infinite;
-  color: #fff;
-  height: 100vh;
+  min-height: 100vh;
   display: flex;
-  justify-content: center;
   align-items: center;
+  justify-content: center;
   overflow: hidden;
+  font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+  color: #f8fafc;
+  background: radial-gradient(ellipse 120% 80% at 50% -20%, rgba(45, 212, 191, 0.35), transparent 50%),
+    radial-gradient(ellipse 100% 60% at 100% 50%, rgba(14, 165, 233, 0.2), transparent 45%),
+    linear-gradient(155deg, #0f172a 0%, #134e4a 42%, #0d4f4c 100%);
 }
 
-/* Animation du fond dégradé */
-@keyframes gradientAnimation {
-  0% {
-    background-position: 0% 50%;
-  }
-  50% {
-    background-position: 100% 50%;
-  }
-  100% {
-    background-position: 0% 50%;
-  }
+.initial-page__noise {
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  opacity: 0.04;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 
-/* Conteneur principal */
-.container {
+.initial-page__content {
+  position: relative;
+  z-index: 1;
   text-align: center;
-  animation: fadeIn 2s ease-in-out;
+  padding: 2rem 1.5rem;
+  max-width: 32rem;
 }
 
-/* ---- Texte avec dégradé animé ---- */
-.welcome-text,
-.service {
-  background: linear-gradient(
-    90deg,
-    #ff758c,
-    #5a189a,
-    #3c096c,
-    #ffffff,
-    #ff7eb3
-  );
-  box-shadow: 0px 0px 20px #ffffff;
-  background-size: 400%;
+.initial-page__logo-wrap {
+  margin-bottom: 1.75rem;
+}
+
+.initial-page__logo {
+  width: min(200px, 52vw);
+  height: auto;
+  filter: drop-shadow(0 12px 40px rgba(0, 0, 0, 0.35));
+}
+
+.initial-page__title {
+  font-size: clamp(1.35rem, 4.5vw, 1.85rem);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1.25;
+  margin: 0 0 1rem;
+  background: linear-gradient(120deg, #f0fdfa 0%, #5eead4 45%, #e0f2fe 100%);
+  background-size: 200% auto;
   -webkit-background-clip: text;
+  background-clip: text;
   -webkit-text-fill-color: transparent;
-  animation: textGradient 6s ease-in-out infinite;
+  animation: initial-shimmer 5s ease-in-out infinite;
 }
 
-/* Animation du dégradé du texte */
-@keyframes textGradient {
-  0% {
-    background-position: 0%;
+@keyframes initial-shimmer {
+  0%,
+  100% {
+    background-position: 0% center;
   }
   50% {
-    background-position: 100%;
-  }
-  100% {
-    background-position: 0%;
+    background-position: 100% center;
   }
 }
 
-/* Style spécifique du titre */
-.welcome-text {
-  font-size: 2rem;
-  font-weight: bold;
+.initial-page__tagline {
+  font-size: clamp(0.9rem, 2.8vw, 1.05rem);
+  color: rgba(248, 250, 252, 0.82);
+  line-height: 1.55;
+  margin: 0 auto 2rem;
+  max-width: 28rem;
+}
+
+.initial-page__progress {
+  height: 4px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
+  overflow: hidden;
+  margin: 0 auto 0.75rem;
+  max-width: 220px;
+}
+
+.initial-page__progress-bar {
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #14b8a6, #2dd4bf, #38bdf8);
+  transition: width 0.12s linear;
+}
+
+.initial-page__hint {
+  font-size: 0.75rem;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
-  letter-spacing: 5px;
-  padding: 3rem 0;
-  animation: slideIn 1.5s ease-out, textGradient 3s ease-in-out infinite;
+  color: rgba(248, 250, 252, 0.45);
+  margin: 0;
 }
 
-/* Sous-titre */
-.service {
-  font-size: 1.5rem;
-  margin-top: 1rem;
-  animation: fadeIn 3s ease-in-out, textGradient 3s ease-in-out infinite;
-}
-
-/* Image */
-.init_img {
-  width: 300px;
-}
-
-/* Autres animations */
-@keyframes slideIn {
-  from {
-    transform: translateY(-100px);
-    opacity: 0;
-  }
-  to {
-    transform: translateY(0);
-    opacity: 1;
-  }
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
+@media (prefers-reduced-motion: reduce) {
+  .initial-page__title {
+    animation: none;
+    -webkit-text-fill-color: #f0fdfa;
+    background: none;
   }
 }

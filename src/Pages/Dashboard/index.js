@@ -18,6 +18,7 @@ import {
   formatPhoneNumber,
   formatPrice,
 } from '../components/capitalizeFunction';
+import DureeSejourDisplay from '../components/DureeSejourDisplay';
 import LoadingSpiner from '../components/LoadingSpiner';
 import { useNavigate } from 'react-router-dom';
 import AllReservationListe from '../Reservation/AllReservationListe';
@@ -46,7 +47,7 @@ const Dashboard = () => {
         <Container fluid={true}>
           <Breadcrumbs
             title='Administrateur'
-            breadcrumbItem='Tabelau de Bord'
+            breadcrumbItem='Tableau de bord'
           />
           <ActiveSecteur />
           <motion.div
@@ -75,10 +76,10 @@ const Dashboard = () => {
 
           <Row>
             <Col lg={12}>
-              <Card>
+              <Card className='rs-data-card'>
                 <CardBody>
                   <div id='clientsList'>
-                    <h3 className='text-center fw-bold'>Contrat en Cours</h3>
+                    <h3 className='text-center fw-bold mb-0'>Contrats en cours</h3>
                     <Row className='g-4 mb-3'>
                       <Col>
                         <p className='text-center font-size-15 mt-2'>
@@ -98,54 +99,69 @@ const Dashboard = () => {
                     {loadingContrat && <LoadingSpiner />}
 
                     <div
-                      className='table-responsive table-card mt-3'
+                      className='table-responsive table-card rs-table-scroll mt-3'
                       style={{ minHeight: 350 }}
                     >
                       {!filterActualContrat?.length &&
                         !loadingContrat &&
                         !errorContrat && (
-                          <div className='text-center text-mutate'>
-                            Aucun Contrat Enregistré !
+                          <div className='text-center text-muted py-5'>
+                            Aucun contrat enregistré.
                           </div>
                         )}
                       {!errorContrat &&
                         filterActualContrat?.length > 0 &&
                         !loadingContrat && (
                           <table
-                            style={{
-                              border: '2px solid #b1b1b1',
-                              borderCollapse: 'collapse',
-                            }}
-                            className='table align-middle  table-nowrap table-hover'
+                            className='table  align-middle table-nowrap table-hover  rs-contrat-table mb-0'
                             id='contratTable'
                           >
                             <thead className='table-light'>
-                              <tr className='text-center'>
-                                <th>Statut</th>
-                                <th>N° d'appartement</th>
-                                <th>Secteur</th>
-                                <th>Client</th>
-                                <th>Téléphone</th>
-                                <th>Date d'entrée</th>
-                                <th>Date de Sortie</th>
-                                <th>Mois</th>
-                                <th>Semaine</th>
-
-                                <th>Jour</th>
-                                <th>Heure</th>
-                                <th>Montant</th>
-                                <th>Remise</th>
-                                <th>Après Remise</th>
-
-                                <th>Action</th>
+                              <tr>
+                                <th scope='col' className='rs-th-tag'>
+                                  Statut
+                                </th>
+                                <th scope='col' className='rs-th-tag'>
+                                  N° d'appartement
+                                </th>
+                                <th scope='col' className='rs-th-text'>
+                                  Secteur
+                                </th>
+                                <th scope='col' className='rs-th-text'>
+                                  Client
+                                </th>
+                                <th scope='col' className='rs-th-nowrap'>
+                                  Téléphone
+                                </th>
+                                <th scope='col' className='rs-th-nowrap'>
+                                  Date d'entrée
+                                </th>
+                                <th scope='col' className='rs-th-nowrap'>
+                                  Date de Sortie
+                                </th>
+                                <th scope='col' className='rs-th-text text-center'>
+                                  Durée
+                                </th>
+                                <th scope='col' className='rs-th-num'>
+                                  Montant
+                                </th>
+                                <th scope='col' className='rs-th-num'>
+                                  Remise
+                                </th>
+                                <th scope='col' className='rs-th-num'>
+                                  Après Remise
+                                </th>
+                                <th scope='col' className='rs-th-actions'>
+                                  Action
+                                </th>
                               </tr>
                             </thead>
 
-                            <tbody className='list form-check-all text-center'>
+                            <tbody className='list form-check-all'>
                               {filterActualContrat?.map((contrat) => (
-                                <tr key={contrat?._id} className='text-center'>
+                                <tr key={contrat?._id}>
                                   <td
-                                    className={` text-light ${
+                                    className={`rs-td-status text-light ${
                                       contrat?.statut
                                         ? 'bg-success'
                                         : 'bg-danger'
@@ -153,27 +169,29 @@ const Dashboard = () => {
                                   >
                                     {contrat?.statut ? 'En cours' : 'Terminé'}
                                   </td>
-                                  <td className='badge bg-info  rounded rounded-pill text-center text-light'>
-                                    {formatPrice(
-                                      contrat?.appartement?.appartementNumber
-                                    )}
+                                  <td className='rs-td-tag'>
+                                    <span className='badge bg-info rounded rounded-pill text-light'>
+                                      {formatPrice(
+                                        contrat?.appartement?.appartementNumber
+                                      )}
+                                    </span>
                                   </td>
-                                  <td>
+                                  <td className='rs-td-text'>
                                     {contrat?.appartement?.secteur?.adresse}
                                   </td>
-                                  <td>
+                                  <td className='rs-td-text'>
                                     {capitalizeWords(
                                       contrat?.client?.firstName +
                                         ' ' +
                                         contrat?.client?.lastName
                                     )}{' '}
                                   </td>
-                                  <td>
+                                  <td className='rs-td-nowrap'>
                                     {formatPhoneNumber(
                                       contrat?.client?.phoneNumber
                                     )}{' '}
                                   </td>
-                                  <td>
+                                  <td className='rs-td-nowrap'>
                                     {new Date(
                                       contrat?.startDate
                                     ).toLocaleDateString('fr-Fr', {
@@ -184,7 +202,7 @@ const Dashboard = () => {
                                     })}{' '}
                                   </td>
                                   <td
-                                    className={`${
+                                    className={`rs-td-nowrap ${
                                       new Date(contrat?.endDate)
                                         .toISOString()
                                         .substring(0, 10) > today
@@ -210,31 +228,42 @@ const Dashboard = () => {
                                     })}{' '}
                                   </td>
 
-                                  <td>{formatPrice(contrat.mois)} </td>
-
-                                  <td>{formatPrice(contrat.semaine || 0)}</td>
-                                  <td>{formatPrice(contrat.jour || 0)}</td>
-                                  <td>{formatPrice(contrat.heure || 0)}</td>
-                                  <td>{formatPrice(contrat.amount || 0)} F</td>
-                                  <td>
+                                  <td className='rs-td-text text-center align-middle'>
+                                    <DureeSejourDisplay
+                                      mois={contrat.mois}
+                                      semaine={contrat.semaine}
+                                      jour={contrat.jour}
+                                      heure={contrat.heure}
+                                    />
+                                  </td>
+                                  <td className='rs-td-num'>
+                                    {formatPrice(contrat.amount || 0)} F
+                                  </td>
+                                  <td className='rs-td-num'>
                                     {formatPrice(contrat.reduction || 0)} F
                                   </td>
-                                  <td>
+                                  <td className='rs-td-num'>
                                     {formatPrice(contrat.totalAmount || 0)} F
                                   </td>
 
-                                  <td className='text-center'>
+                                  <td className='rs-td-actions'>
                                     <i className='fas fa-book-open align-center me-2 '></i>
                                     <strong
-                                      style={{
-                                        textDecoration: 'underline',
-                                        cursor: 'pointer',
-                                        color: ' #99c132',
-                                      }}
+                                      className='rs-contrat-link'
+                                      role='button'
+                                      tabIndex={0}
                                       onClick={() => {
                                         navigate(
                                           `/contrat/document/${contrat._id}`
                                         );
+                                      }}
+                                      onKeyDown={(e) => {
+                                        if (e.key === 'Enter' || e.key === ' ') {
+                                          e.preventDefault();
+                                          navigate(
+                                            `/contrat/document/${contrat._id}`
+                                          );
+                                        }
                                       }}
                                     >
                                       Contrat

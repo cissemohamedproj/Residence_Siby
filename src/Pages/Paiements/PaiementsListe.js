@@ -150,7 +150,7 @@ export default function PaiementsListe() {
                     )}
                     {isLoading && <LoadingSpiner />}
 
-                    <div className='table-responsive table-card mt-3 mb-1'>
+                    <div className='table-responsive table-card rs-table-scroll mt-3 mb-1'>
                       {paiementsData?.length === 0 && (
                         <div className='text-center text-mutate'>
                           Aucun paiement trouver !
@@ -158,24 +158,46 @@ export default function PaiementsListe() {
                       )}
                       {!error && !isLoading && paiementsData?.length > 0 && (
                         <table
-                          className='table align-middle table-nowrap table-hover'
+                          className='table rs-data-table align-middle table-nowrap table-hover'
                           id='paiementTable'
                         >
                           <thead className='table-light'>
-                            <tr className='text-center'>
-                              <th data-sort='paiementDate'>Date de Paiement</th>
-                              <th>Client</th>
-                              <th>Téléphone</th>
-                              <th>Total Contrat</th>
-                              <th>Remise</th>
-                              <th>Total après remise</th>
-                              <th>Net Payé</th>
-                              <th>Reliquat</th>
-                              <th>Action</th>
+                            <tr>
+                              <th
+                                scope='col'
+                                className='rs-th-nowrap'
+                                data-sort='paiementDate'
+                              >
+                                Date de Paiement
+                              </th>
+                              <th scope='col' className='rs-th-text'>
+                                Client
+                              </th>
+                              <th scope='col' className='rs-th-nowrap'>
+                                Téléphone
+                              </th>
+                              <th scope='col' className='rs-th-num'>
+                                Total Contrat
+                              </th>
+                              <th scope='col' className='rs-th-num'>
+                                Remise
+                              </th>
+                              <th scope='col' className='rs-th-num'>
+                                Total après remise
+                              </th>
+                              <th scope='col' className='rs-th-num'>
+                                Net Payé
+                              </th>
+                              <th scope='col' className='rs-th-num'>
+                                Reliquat
+                              </th>
+                              <th scope='col' className='rs-th-actions'>
+                                Action
+                              </th>
                             </tr>
                           </thead>
 
-                          <tbody className='list form-check-all text-center'>
+                          <tbody className='list form-check-all'>
                             {paiementsData?.length > 0 &&
                               paiementsData?.map((paiement) => {
                                 const client =
@@ -185,22 +207,25 @@ export default function PaiementsListe() {
                                   paiement?.contrat || paiement?.rental;
                                 return (
                                   <tr key={paiement?._id}>
-                                    <th scope='row'>
+                                    <th
+                                      scope='row'
+                                      className='rs-td-nowrap'
+                                    >
                                       {new Date(
                                         paiement?.paiementDate
                                       ).toLocaleDateString()}
                                     </th>
-                                    <td>
+                                    <td className='rs-td-text'>
                                       {capitalizeWords(
                                         client?.firstName +
                                           ' ' +
                                           client?.lastName
                                       )}{' '}
                                     </td>
-                                    <td>
+                                    <td className='rs-td-nowrap'>
                                       {formatPhoneNumber(client?.phoneNumber)}{' '}
                                     </td>
-                                    <td>
+                                    <td className='rs-td-num'>
                                       {formatPrice(
                                         contrat?.amount ||
                                           contrat?.totalAmount ||
@@ -208,13 +233,13 @@ export default function PaiementsListe() {
                                       )}{' '}
                                       F
                                     </td>
-                                    <td className='text-warning'>
+                                    <td className='rs-td-num text-warning'>
                                       {formatPrice(
                                         paiement?.contrat?.reduction || 0
                                       )}{' '}
                                       F
                                     </td>
-                                    <td>
+                                    <td className='rs-td-num'>
                                       {formatPrice(
                                         contrat?.amount ||
                                           contrat?.totalAmount ||
@@ -223,11 +248,11 @@ export default function PaiementsListe() {
                                       F
                                     </td>
 
-                                    <td>
+                                    <td className='rs-td-num'>
                                       {formatPrice(paiement?.totalPaye || 0)}
                                       {' F '}
                                     </td>
-                                    <td className='text-danger'>
+                                    <td className='rs-td-num text-danger'>
                                       {formatPrice(
                                         contrat?.totalAmount ||
                                           contrat?.amount -
@@ -237,7 +262,7 @@ export default function PaiementsListe() {
                                       {' F '}
                                     </td>
 
-                                    <td>
+                                    <td className='rs-td-actions'>
                                       <div className='d-flex gap-2'>
                                         <div>
                                           <button

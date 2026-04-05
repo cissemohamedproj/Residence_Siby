@@ -6,6 +6,7 @@ import {
   formatPhoneNumber,
   formatPrice,
 } from '../components/capitalizeFunction';
+import DureeSejourDisplay from '../components/DureeSejourDisplay';
 import { useAllRental } from '../../Api/queriesReservation';
 export default function AllReservationListe() {
   const { data: rentalsData, isLoading, error } = useAllRental();
@@ -70,7 +71,7 @@ export default function AllReservationListe() {
               {isLoading && <LoadingSpiner />}
 
               <div
-                className='table-responsive table-card mt-3'
+                className='table-responsive table-card rs-table-scroll mt-3'
                 style={{ minHeight: 350 }}
               >
                 {!filteredRental?.length && !isLoading && !error && (
@@ -80,7 +81,7 @@ export default function AllReservationListe() {
                 )}
                 {!error && filteredRental?.length > 0 && !isLoading && (
                   <table
-                    className='table align-middle table-nowrap table-hover'
+                    className='table rs-data-table align-middle table-nowrap table-hover'
                     id='contratTable'
                   >
                     <thead className='table-light'>
@@ -96,11 +97,7 @@ export default function AllReservationListe() {
                         <th>Montant </th>
                         <th> Payé</th>
                         <th>Reliquat</th>
-                        <th>Mois</th>
-                        <th>Semaine</th>
-
-                        <th>Jour</th>
-                        <th>Heure</th>
+                        <th>Durée</th>
                       </tr>
                     </thead>
 
@@ -161,8 +158,10 @@ export default function AllReservationListe() {
                               }
                             )}
                           </td>
-                          <td className='badge bg-info  rounded rounded-pill text-center text-light'>
-                            {formatPrice(item?.appartement?.appartementNumber)}
+                          <td className='rs-td-tag'>
+                            <span className='badge bg-info rounded rounded-pill text-light'>
+                              {formatPrice(item?.appartement?.appartementNumber)}
+                            </span>
                           </td>
                           <td>{item?.appartement?.secteur?.adresse}</td>
                           <td>
@@ -184,10 +183,14 @@ export default function AllReservationListe() {
                             )}{' '}
                             F{' '}
                           </td>
-                          <td>{formatPrice(item.mois || 0)} </td>
-                          <td>{formatPrice(item.semaine || 0)}</td>
-                          <td>{formatPrice(item.jour || 0)}</td>
-                          <td>{formatPrice(item.heure || 0)}</td>
+                          <td className='align-middle'>
+                            <DureeSejourDisplay
+                              mois={item.mois}
+                              semaine={item.semaine}
+                              jour={item.jour}
+                              heure={item.heure}
+                            />
+                          </td>
                         </tr>
                       ))}
                     </tbody>

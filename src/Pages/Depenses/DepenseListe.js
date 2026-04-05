@@ -165,7 +165,7 @@ export default function DepenseListe() {
                     )}
                     {isLoading && <LoadingSpiner />}
 
-                    <div className='table-responsive table-card mt-3 mb-1'>
+                    <div className='table-responsive table-card rs-table-scroll mt-3 mb-1'>
                       {filterSearchDepense?.length === 0 && (
                         <div className='text-center text-mutate'>
                           Aucune Dépense trouvée !
@@ -175,48 +175,58 @@ export default function DepenseListe() {
                         !isLoading &&
                         filterSearchDepense.length > 0 && (
                           <table
-                            className='table align-middle table-nowrap'
+                            className='table rs-data-table align-middle table-nowrap'
                             id='depenseTable'
                           >
                             <thead className='table-light'>
-                              <tr className='text-center '>
-                                <th style={{ width: '50px' }}>
+                              <tr>
+                                <th
+                                  scope='col'
+                                  className='rs-th-nowrap'
+                                  style={{ width: '50px' }}
+                                >
                                   Date de dépense
                                 </th>
-                                <th>Secteur</th>
-
-                                <th>Motif de Dépense</th>
-                                <th>Montant Dépensé</th>
-
-                                <th>Action</th>
+                                <th scope='col' className='rs-th-text'>
+                                  Secteur
+                                </th>
+                                <th scope='col' className='rs-th-text'>
+                                  Motif de Dépense
+                                </th>
+                                <th scope='col' className='rs-th-num'>
+                                  Montant Dépensé
+                                </th>
+                                <th scope='col' className='rs-th-actions'>
+                                  Action
+                                </th>
                               </tr>
                             </thead>
                             <tbody className='list form-check-all'>
                               {filterSearchDepense?.length > 0 &&
                                 filterSearchDepense?.map((depense) => (
-                                  <tr key={depense._id} className='text-center'>
-                                    <td>
+                                  <tr key={depense._id}>
+                                    <td className='rs-td-nowrap'>
                                       {new Date(
                                         depense.dateOfDepense
                                       ).toLocaleDateString()}{' '}
                                     </td>
 
-                                    <td>
+                                    <td className='rs-td-text'>
                                       {capitalizeWords(
                                         depense?.secteur?.adresse
                                       )}
                                     </td>
-                                    <td className='text-wrap'>
+                                    <td className='rs-td-text text-wrap'>
                                       {capitalizeWords(depense.motifDepense)}
                                     </td>
 
-                                    <td className='text-danger'>
+                                    <td className='rs-td-num text-danger'>
                                       {formatPrice(depense.totalAmount)}
                                       {' F '}
                                     </td>
 
                                     {connectedUserRole === 'admin' && (
-                                      <td>
+                                      <td className='rs-td-actions'>
                                         <div className='d-flex gap-2'>
                                           <div className='edit'>
                                             <button

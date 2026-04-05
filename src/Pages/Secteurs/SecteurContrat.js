@@ -6,6 +6,7 @@ import {
   formatPhoneNumber,
   formatPrice,
 } from '../components/capitalizeFunction';
+import DureeSejourDisplay from '../components/DureeSejourDisplay';
 import { useAllContrat } from '../../Api/queriesContrat';
 import { useNavigate, useParams } from 'react-router-dom';
 import { connectedUserRole } from '../Authentication/userInfos';
@@ -39,7 +40,7 @@ export default function SecteurContrat() {
             <div id='clientsList'>
               <h3 className='text-center fw-bold'>Contrats</h3>
 
-              <Row className='g-4 mb-3'>
+              <Row className='gab-4 mb-3'>
                 <Col>
                   <p className='text-center font-size-15 mt-2'>
                     Nombre:{' '}
@@ -75,7 +76,7 @@ export default function SecteurContrat() {
               )}
               {isLoading && <LoadingSpiner />}
 
-              <div className='table-responsive table-card mt-3 mb-1'>
+              <div className='table-responsive table-card rs-table-scroll mt-3 mb-1' style={{minHeight: '300px', maxHeight: '300px',  width: '100%'}}>
                 {!filteredContrat?.length && !isLoading && !error && (
                   <div className='text-center text-mutate'>
                     Aucun Contrat Enregistré !
@@ -83,21 +84,22 @@ export default function SecteurContrat() {
                 )}
                 {!error && filteredContrat?.length > 0 && !isLoading && (
                   <table
-                    className='table align-middle table-nowrap table-hover'
+                    className='table rs-data-table align-middle table-hover'
                     id='fournisseurTable'
                   >
                     <thead className='table-light'>
                       <tr className='text-center'>
-                        <th>N° d'Appartement</th>
+                        <th>Statut</th>
+                        <th>Appartement</th>
                         <th>Client</th>
-                        <th>Téléphone</th>
-                        <th>Date D'Entrée</th>
-                        <th>Date de Sortie</th>
-                        <th>Mois</th>
-                        <th>Semaine</th>
+                        {/* <th>Téléphone</th> */}
+                        <th>Début</th>
+                        <th>Fin</th>
+                        <th>Durée</th>
+                        {/* <th>Semaine</th>
 
                         <th>Jour</th>
-                        <th>Heure</th>
+                        <th>Heure</th> */}
                         <th>Montant</th>
                         <th>Remise</th>
                         <th>Après Remise</th>
@@ -121,16 +123,17 @@ export default function SecteurContrat() {
                               contrat?.appartement?.appartementNumber
                             )}{' '}
                           </th>
-                          <td>
-                            {capitalizeWords(
+                          <td className='text-center '>
+                          <p className='mb-0 '>{capitalizeWords(
                               contrat?.client?.firstName +
                                 ' ' +
                                 contrat?.client?.lastName
-                            )}{' '}
+                            )}</p>
+
+                            <p>{formatPhoneNumber(contrat?.client?.phoneNumber)}{' '}</p>
+                          
                           </td>
-                          <td>
-                            {formatPhoneNumber(contrat?.client?.phoneNumber)}{' '}
-                          </td>
+                          
 
                           <td>
                             {new Date(contrat.startDate).toLocaleDateString(
@@ -170,11 +173,17 @@ export default function SecteurContrat() {
                               }
                             )}{' '}
                           </td>
-                          <td>{formatPrice(contrat.mois)} </td>
 
-                          <td>{formatPrice(contrat.semaine || 0)}</td>
-                          <td>{formatPrice(contrat.jour || 0)}</td>
-                          <td>{formatPrice(contrat.heure || 0)}</td>
+                          <td className='align-middle'>
+                            <DureeSejourDisplay
+                              mois={contrat.mois}
+                              semaine={contrat.semaine}
+                              jour={contrat.jour}
+                              heure={contrat.heure}
+                            />
+                          </td>
+
+
                           <td>{formatPrice(contrat.amount || 0)} F</td>
                           <td>{formatPrice(contrat.reduction || 0)} F</td>
                           <td>{formatPrice(contrat.totalAmount || 0)} F</td>

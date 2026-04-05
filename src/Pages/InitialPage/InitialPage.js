@@ -1,33 +1,95 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import './InitialPage.css'; // Assurez-vous de créer ce fichier pour les styles
+import { motion, AnimatePresence } from 'framer-motion';
+import './InitialPage.css';
 import { companyLogo, companyServices2 } from '../CompanyInfo/CompanyInfo';
+
+const SPLASH_MS = 9000;
 
 const InitialPage = () => {
   const navigate = useNavigate();
-  const [showText, setShowText] = useState(true);
+  const [showSplash, setShowSplash] = useState(true);
+  const [progress, setProgress] = useState(0);
+
+  useEffect(() => {
+    const start = Date.now();
+    const tick = () => {
+      const elapsed = Date.now() - start;
+      setProgress(Math.min(100, (elapsed / SPLASH_MS) * 100));
+      if (elapsed < SPLASH_MS) {
+        requestAnimationFrame(tick);
+      }
+    };
+    const raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, []);
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      setShowText(false);
+      setShowSplash(false);
       navigate('/home');
-    }, 9000);
+    }, SPLASH_MS);
 
-    return () => clearTimeout(timer); // Nettoyage du timer
+    return () => clearTimeout(timer);
   }, [navigate]);
 
   return (
     <div className='initial-page'>
-      {showText && (
-        <div className='container'>
-          <img src={companyLogo} alt='Logo' className='init_img' />
-          <h2 className='welcome-text'>Bienvenue sur Residence Siby</h2>
-          <p className='service'>{companyServices2} </p>
-        </div>
-      )}
+      <div className='initial-page__noise' aria-hidden />
+      <AnimatePresence mode='wait'>
+        {showSplash && (
+          <motion.div
+            className='initial-page__content'
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0, scale: 0.98 }}
+            transition={{ duration: 0.5 }}
+          >
+            <motion.div
+              className='initial-page__logo-wrap'
+              initial={{ opacity: 0, y: 24 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.15, duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+            >
+              <img src={companyLogo} alt='Logo' className='initial-page__logo' />
+            </motion.div>
+
+            <motion.h1
+              className='initial-page__title'
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.35, duration: 0.55 }}
+            >
+              Bienvenue sur Résidence Siby
+            </motion.h1>
+
+            <motion.p
+              className='initial-page__tagline'
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.55, duration: 0.5 }}
+            >
+              {companyServices2}
+            </motion.p>
+
+            <div
+              className='initial-page__progress'
+              role='progressbar'
+              aria-valuenow={Math.round(progress)}
+              aria-valuemin={0}
+              aria-valuemax={100}
+            >
+              <div
+                className='initial-page__progress-bar'
+                style={{ width: `${progress}%` }}
+              />
+            </div>
+            <p className='initial-page__hint'>Chargement de l&apos;application…</p>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };
 
-// lorsqu'on se connecte je veux une animation de texte "Bienvenue sur Residence Siby" qui s'affiche pendant 5s ensuite on faire une redirection automatique vers "/home"
 export default InitialPage;

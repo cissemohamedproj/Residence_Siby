@@ -78,9 +78,9 @@ const Header = (props) => {
               <i className='fas fa-align-justify align-middle text-warning'></i>
             </button>
           </div>
-          <div className='d-none d-md-block d-flex flex-column justify-content-center align-items-center text-center'>
+          <div className='d-none d-md-flex flex-column justify-content-center align-items-center text-center flex-grow-1 px-2 rs-header-title-block'>
             <h3 className='text-info fw-bold'>{companyLittleName}</h3>
-            <p className='text-warning'>{companyServices2}</p>
+            <p className='text-warning mb-0'>{companyServices2}</p>
           </div>
 
           <div className='d-flex'>

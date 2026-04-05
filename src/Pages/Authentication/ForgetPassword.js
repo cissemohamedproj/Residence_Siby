@@ -12,7 +12,7 @@ import {
   Form,
 } from 'reactstrap';
 
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import withRouter from '../../components/Common/withRouter';
 
 // Formik Validation
@@ -82,11 +82,13 @@ const ForgetPasswordPage = () => {
 
   return (
     <React.Fragment>
-      <div className='account-pages my-5 pt-sm-5'>
+      <div className='bg-login rs-auth-page'>
+        <div className='bg-overlay' />
+        <div className='account-pages my-5 pt-sm-5'>
         <Container>
           <Row className='justify-content-center'>
             <Col md={8} lg={6} xl={5}>
-              <Card className='overflow-hidden'>
+              <Card className='rs-auth-card overflow-hidden'>
                 <div className='d-flex justify-content-center align-items-center'>
                   <img
                     src={companyLogo}
@@ -149,13 +151,18 @@ const ForgetPasswordPage = () => {
                     </Form>
                   </div>
                   <div className='mt-5 text-center'>
-                    <p className='text-secondary'>
+                    <p className='rs-auth-credit rs-auth-credit--light mb-0'>
                       © {new Date().getFullYear()} {companyName}{' '}
                       {companyOwnerName} |{' '}
-                      <i className='mdi mdi-heart text-danger'></i> Créé Par{' '}
-                      <Link to={'https://www.cissemohamed.com'} target='blank'>
+                      <i className='mdi mdi-heart text-danger'></i> Créé par{' '}
+                      <a
+                        href='https://www.mohamedcisse.com'
+                        target='_blank'
+                        rel='noopener noreferrer'
+                        className='rs-auth-credit__link'
+                      >
                         Cisse Mohamed
-                      </Link>
+                      </a>
                     </p>
                   </div>
                 </CardBody>
@@ -163,6 +170,7 @@ const ForgetPasswordPage = () => {
             </Col>
           </Row>
         </Container>
+        </div>
       </div>
     </React.Fragment>
   );

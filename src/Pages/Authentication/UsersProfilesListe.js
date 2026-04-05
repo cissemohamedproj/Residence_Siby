@@ -56,31 +56,49 @@ export default function UsersProfilesListe() {
               </div>
             )}
             {!loadingProfile && !error && userProfileData && (
-              <div className='table-responsive'>
-                <table className='table table-centered table-nowrap mb-0'>
+              <div className='table-responsive table-card rs-table-scroll'>
+                <table className='table rs-data-table table-centered table-nowrap mb-0'>
                   <thead className='table-light'>
-                    <tr className='text-center'>
-                      <th style={{ width: '20px' }}>Boutique</th>
-                      <th>Nom</th>
-                      <th>Email</th>
-                      <th>Role</th>
-                      <th>Action</th>
+                    <tr>
+                      <th
+                        scope='col'
+                        className='rs-th-num'
+                        style={{ width: '20px' }}
+                      >
+                        Boutique
+                      </th>
+                      <th scope='col' className='rs-th-text'>
+                        Nom
+                      </th>
+                      <th scope='col' className='rs-th-text'>
+                        Email
+                      </th>
+                      <th scope='col' className='rs-th-nowrap'>
+                        Role
+                      </th>
+                      <th scope='col' className='rs-th-actions'>
+                        Action
+                      </th>
                     </tr>
                   </thead>
                   <tbody>
                     {userProfileData?.length > 0 &&
                       userProfileData.map((user, index) => (
                         <tr key={index}>
-                          <td>{index + 1}</td>
-                          <td className='text-uppercase'>{user.name}</td>
-                          <td>{user.email}</td>
-                          <td>
+                          <th className='rs-td-num' scope='row'>
+                            {index + 1}
+                          </th>
+                          <td className='rs-td-text text-uppercase'>
+                            {user.name}
+                          </td>
+                          <td className='rs-td-text'>{user.email}</td>
+                          <td className='rs-td-nowrap'>
                             {user.role === 'admin'
                               ? 'Administrateur'
                               : 'Utilisateur'}
                           </td>
                           {connectedUserRole === 'admin' && (
-                            <td>
+                            <td className='rs-td-actions'>
                               <button
                                 onClick={() =>
                                   navigate(`/userProfileDetails/${user._id}`)

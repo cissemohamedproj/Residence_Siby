@@ -1,5 +1,13 @@
-import React, { useCallback, useRef, useState } from 'react';
-import { Button, Card, CardBody, Col, Row } from 'reactstrap';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
+import {
+  Button,
+  Card,
+  CardBody,
+  Col,
+  Input,
+  Label,
+  Row,
+} from 'reactstrap';
 import { DownloadTableExcel } from 'react-export-table-to-excel';
 import LoadingSpiner from '../components/LoadingSpiner';
 import { capitalizeWords, formatPrice } from '../components/capitalizeFunction';
@@ -22,336 +30,423 @@ export default function PaiementBilans() {
   const { data: depenses } = useAllDepenses();
   const tableRef = useRef(null);
   const [selectedSecteur, setSelectedSecteur] = useState(null);
-
-  // State de Recherche
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
 
   const isBetweenDates = useCallback(
     (dateStr) => {
-      if (!startDate || !endDate) return true; // si pas encore choisi, on ne filtre pas
+      if (!startDate || !endDate) return true;
+      if (dateStr == null || dateStr === '') return false;
       const date = new Date(dateStr).getTime();
+      if (Number.isNaN(date)) return false;
       const start = new Date(startDate).getTime();
       const end = new Date(endDate);
-      end.setHours(23, 59, 59, 999); // inclure toute la journée
+      end.setHours(23, 59, 59, 999);
       return date >= start && date <= end.getTime();
     },
     [startDate, endDate]
   );
 
-  // Filtrer les Contrats
-  const filterContrat = contrats
-    ?.filter((item) => {
-      return isBetweenDates(item?.startDate);
-    })
-    ?.filter((item) => {
-      // Filtrer par secteur
-      if (!selectedSecteur) return true;
-      return item?.appartement?.secteur?._id === selectedSecteur;
-    });
+  const filterContrat = useMemo(
+    () =>
+      contrats
+        ?.filter((item) => isBetweenDates(item?.startDate))
+        ?.filter((item) => {
+          if (!selectedSecteur) return true;
+          return item?.appartement?.secteur?._id === selectedSecteur;
+        }),
+    [contrats, isBetweenDates, selectedSecteur]
+  );
 
-  // Filtrer les Reservations
-  const filterRentals = rentals
-    ?.filter((item) => {
-      return isBetweenDates(item?.startDate);
-    })
-    ?.filter((item) => {
-      // Filtrer par secteur
-      if (!selectedSecteur) return true;
-      return item?.appartement?.secteur?._id === selectedSecteur;
-    });
+  const filterRentals = useMemo(
+    () =>
+      rentals
+        ?.filter((item) =>
+          isBetweenDates(item?.rentalDate ?? item?.startDate)
+        )
+        ?.filter((item) => {
+          if (!selectedSecteur) return true;
+          return item?.appartement?.secteur?._id === selectedSecteur;
+        }),
+    [rentals, isBetweenDates, selectedSecteur]
+  );
 
-  // Fonction de Rechercher
-  const filterPaiement = paiementsData
-    ?.filter((item) => {
-      // Filtrer par date
-      return isBetweenDates(item.paiementDate);
-    })
-    ?.filter((item) => {
-      // Filtrer par secteur
-      if (!selectedSecteur) return true;
-      return (
-        item?.contrat?.appartement?.secteur?._id === selectedSecteur ||
-        item?.rental?.appartement?.secteur?._id === selectedSecteur
-      );
-    });
+  const filterPaiement = useMemo(
+    () =>
+      paiementsData
+        ?.filter((item) => isBetweenDates(item.paiementDate))
+        ?.filter((item) => {
+          if (!selectedSecteur) return true;
+          return (
+            item?.contrat?.appartement?.secteur?._id === selectedSecteur ||
+            item?.rental?.appartement?.secteur?._id === selectedSecteur
+          );
+        }),
+    [paiementsData, isBetweenDates, selectedSecteur]
+  );
 
-  const filterComission = comissions
-    ?.filter((item) => {
-      // Filtrer par date
-      return isBetweenDates(item.paiementDate);
-    })
-    ?.filter((item) => {
-      // Filtrer par secteur
-      if (!selectedSecteur) return true;
-      return item?.secteur?._id === selectedSecteur;
-    });
+  const filterComission = useMemo(
+    () =>
+      comissions
+        ?.filter((item) => isBetweenDates(item.paiementDate))
+        ?.filter((item) => {
+          if (!selectedSecteur) return true;
+          return item?.secteur?._id === selectedSecteur;
+        }),
+    [comissions, isBetweenDates, selectedSecteur]
+  );
 
-  // Fonction de Rechercher
-  const filterDepense = depenses
-    ?.filter((item) => {
-      // Filtrer par date
-      return isBetweenDates(item.dateOfDepense);
-    })
-    ?.filter((item) => {
-      // Filtrer par secteur
-      if (!selectedSecteur) return true;
-      return item?.secteur?._id === selectedSecteur;
-    });
+  const filterDepense = useMemo(
+    () =>
+      depenses
+        ?.filter((item) => isBetweenDates(item.dateOfDepense))
+        ?.filter((item) => {
+          if (!selectedSecteur) return true;
+          return item?.secteur?._id === selectedSecteur;
+        }),
+    [depenses, isBetweenDates, selectedSecteur]
+  );
 
-  // Total de Contrat
-  const sumTotalRentalsAmount = filterRentals?.reduce((curr, item) => {
-    return (curr += item?.totalAmount);
-  }, 0);
+  const sumTotalRentalsAmount = useMemo(
+    () =>
+      filterRentals?.reduce(
+        (curr, item) => curr + (Number(item?.totalAmount) || 0),
+        0
+      ) ?? 0,
+    [filterRentals]
+  );
 
-  // Total de Contrat
-  const sumTotalContratAmount = filterContrat?.reduce((curr, item) => {
-    return (curr += item?.totalAmount);
-  }, 0);
+  const sumTotalContratAmount = useMemo(
+    () =>
+      filterContrat?.reduce(
+        (curr, item) => curr + (Number(item?.totalAmount) || 0),
+        0
+      ) ?? 0,
+    [filterContrat]
+  );
 
-  // Total de Comission
-  const sumTotalComission = filterComission?.reduce((curr, item) => {
-    return (curr += item?.amount);
-  }, 0);
+  const sumTotalComission = useMemo(
+    () =>
+      filterComission?.reduce(
+        (curr, item) => curr + (Number(item?.amount) || 0),
+        0
+      ) ?? 0,
+    [filterComission]
+  );
 
-  // Total Payés
-  const sumTotalPaye = filterPaiement?.reduce((curr, item) => {
-    return (curr += item?.totalPaye);
-  }, 0);
+  const sumTotalPaye = useMemo(
+    () =>
+      filterPaiement?.reduce(
+        (curr, item) => curr + (Number(item?.totalPaye) || 0),
+        0
+      ) ?? 0,
+    [filterPaiement]
+  );
 
-  // Total Dépenses
-  const sumTotalDepense = filterDepense?.reduce((curr, item) => {
-    return (curr += item?.totalAmount);
-  }, 0);
+  const sumTotalDepense = useMemo(
+    () =>
+      filterDepense?.reduce(
+        (curr, item) => curr + (Number(item?.totalAmount) || 0),
+        0
+      ) ?? 0,
+    [filterDepense]
+  );
 
   const sumTotalAmount = sumTotalContratAmount + sumTotalRentalsAmount;
-
   const revenueAmount = sumTotalPaye - sumTotalComission - sumTotalDepense;
+  const reliquat = sumTotalAmount - sumTotalPaye;
+
+  const excelFilename = useMemo(() => {
+    if (startDate && endDate) {
+      return `bilans_paiements_${startDate}_au_${endDate}`;
+    }
+    return `bilans_paiements_${new Date().toISOString().slice(0, 10)}`;
+  }, [startDate, endDate]);
+
+  const nbContrats = filterContrat?.length ?? 0;
+  const nbReservations = filterRentals?.length ?? 0;
+
+  const formatRowDate = (value) => {
+    if (value == null || value === '') return '—';
+    const d = new Date(value);
+    return Number.isNaN(d.getTime()) ? '—' : d.toLocaleDateString('fr-FR');
+  };
 
   return (
     <Row>
       <Col lg={12}>
-        <Card>
-          <CardBody>
+        <Card className='border-0 shadow-sm'>
+          <CardBody className='p-4'>
             <div id='bilanssList'>
-              <Row className='g-4 mb-3 '>
-                <div className='d-flex flex-column justify-content-center align-items-center gap-2'>
-                  <h3>Bilans des Paiements</h3>
-                  <div className='d-flex gap-1'>
-                    <DownloadTableExcel
-                      filename={`bilans de ${new Date(
-                        startDate
-                      )?.toLocaleDateString('fr-Fr')} à ${new Date(
-                        endDate
-                      )?.toLocaleDateString('fr-Fr')}`}
-                      sheet={`bilans de ${new Date(
-                        startDate
-                      )?.toLocaleDateString()} à ${new Date(
-                        endDate
-                      )?.toLocaleDateString()}`}
-                      currentTableRef={tableRef.current}
-                    >
-                      <Button color='success'>Télécharger en Excel</Button>
-                    </DownloadTableExcel>
-                  </div>
+              <div className='d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4'>
+                <div>
+                  <h4 className='mb-1'>Bilan des paiements</h4>
+                  <p className='text-muted small mb-0'>
+                    Synthèse et détail des encaissements selon filtres.
+                  </p>
                 </div>
+                <DownloadTableExcel
+                  filename={excelFilename}
+                  sheet='Bilan paiements'
+                  currentTableRef={tableRef.current}
+                >
+                  <Button color='success' outline className='text-nowrap'>
+                    <i className='fas fa-file-excel me-2' />
+                    Télécharger Excel
+                  </Button>
+                </DownloadTableExcel>
+              </div>
 
-                <div className='d-flex justify-content-between flex-wrap align-items-center gap-3'>
-                  <div
-                    md='12'
-                    className='d-flex flex-column justify-content-around mt-4 flex-wrap'
-                  >
-                    <h6 className=''>
-                      Contrats :{' '}
-                      <span className='text-info'>
-                        {formatPrice(filterContrat?.length)}
-                      </span>
-                    </h6>
-                    <h6 className=''>
-                      Reservation :{' '}
-                      <span className='text-info'>
-                        {formatPrice(rentals?.length)}
-                      </span>
-                    </h6>
-
-                    <h6>
-                      Total Payés:{' '}
-                      <span className='text-success'>
-                        {formatPrice(sumTotalPaye)} F{' '}
-                      </span>
-                    </h6>
-                    <h6>
-                      Sur un Total de:{' '}
-                      <span className='text-info'>
-                        {formatPrice(sumTotalAmount)} F
-                      </span>
-                    </h6>
-                    <h6>
-                      Total Comission:{' '}
-                      <span className='text-danger'>
-                        {formatPrice(sumTotalComission)} F
-                      </span>
-                    </h6>
-                    <h6>
-                      Total Réliquat:{' '}
-                      <span className='text-danger'>
-                        {formatPrice(sumTotalAmount - sumTotalPaye)} F{' '}
-                      </span>
-                    </h6>
-                    <h6 className=''>
-                      Dépenses:{' '}
-                      <span className='text-danger'>
-                        {formatPrice(sumTotalDepense)} F{' '}
-                      </span>
-                    </h6>
-
-                    <h5>
-                      Revenu Total:{' '}
-                      <span
-                        className={`${
-                          revenueAmount > 0 ? 'text-success' : 'text-danger'
-                        }`}
-                      >
-                        {formatPrice(revenueAmount)} F{' '}
-                      </span>
-                    </h5>
-                  </div>
-
-                  <div className='d-flex flex-column gap-3'>
-                    <Button
-                      color='danger'
-                      onClick={() => {
-                        setStartDate(null);
-                        setEndDate(null);
-                        setSelectedSecteur(null);
-                      }}
-                    >
-                      Effacer le Filtre
-                    </Button>
-
-                    <div md='3'>
-                      <h6>Secteur</h6>
+              <Card className='border rs-bilan-filters mb-4'>
+                <CardBody className='py-3'>
+                  <Row className='g-3 align-items-end'>
+                    <Col md={4} sm={6}>
+                      <Label className='form-label small text-muted mb-1'>
+                        Secteur
+                      </Label>
                       {isLoadingSecteurs && <LoadingSpiner />}
                       {errorSecteurs && (
-                        <div className='text-danger'>
-                          Erreur de chargement des secteurs
+                        <div className='text-danger small'>
+                          Erreur secteurs
                         </div>
                       )}
                       {!isLoadingSecteurs &&
                         !errorSecteurs &&
                         secteursData?.length > 0 && (
-                          <select
-                            className='form-control p-2 border-1 border-warning text-info'
+                          <Input
+                            type='select'
                             value={selectedSecteur ?? ''}
-                            onChange={(e) => {
+                            onChange={(e) =>
                               setSelectedSecteur(
                                 e.target.value === '' ? null : e.target.value
-                              );
-                            }}
+                              )
+                            }
                           >
-                            <option value=''>Tous les Secteurs</option>
+                            <option value=''>Tous les secteurs</option>
                             {secteursData?.map((secteur) => (
-                              <option
-                                key={secteur._id}
-                                value={secteur._id}
-                                className='text-info'
-                              >
+                              <option key={secteur._id} value={secteur._id}>
                                 {capitalizeWords(secteur.adresse)}
                               </option>
                             ))}
-                          </select>
+                          </Input>
                         )}
-                    </div>
-                    <div md='4'>
-                      <h6>Date de début</h6>
-                      <input
+                    </Col>
+                    <Col md={3} sm={6}>
+                      <Label className='form-label small text-muted mb-1'>
+                        Date début
+                      </Label>
+                      <Input
                         name='startDate'
-                        onChange={(e) => setStartDate(e.target.value)}
+                        type='date'
                         value={startDate ?? ''}
-                        placeholder='Entrez la date de début'
-                        type='date'
-                        className='form-control p-2 border-1 border-dark'
+                        onChange={(e) =>
+                          setStartDate(e.target.value || null)
+                        }
                         max={new Date().toISOString().split('T')[0]}
                       />
-                    </div>
-                    <div md='4'>
-                      <h6>Date de Fin</h6>
-                      <input
+                    </Col>
+                    <Col md={3} sm={6}>
+                      <Label className='form-label small text-muted mb-1'>
+                        Date fin
+                      </Label>
+                      <Input
                         name='endDate'
-                        onChange={(e) => setEndDate(e.target.value)}
-                        value={endDate ?? ''}
-                        placeholder='Entrez la date de Fin'
                         type='date'
-                        className='form-control p-2 border-1 border-dark'
-                        max={new Date().toISOString().split('T')[0]}
+                        value={endDate ?? ''}
+                        onChange={(e) => setEndDate(e.target.value || null)}
                         min={startDate ?? undefined}
+                        max={new Date().toISOString().split('T')[0]}
                       />
-                    </div>
+                    </Col>
+                    <Col md={2} sm={12}>
+                      <Button
+                        color='outline-secondary'
+                        className='w-100'
+                        type='button'
+                        onClick={() => {
+                          setStartDate(null);
+                          setEndDate(null);
+                          setSelectedSecteur(null);
+                        }}
+                      >
+                        Réinitialiser
+                      </Button>
+                    </Col>
+                  </Row>
+                </CardBody>
+              </Card>
+
+              <Row className='g-3 mb-4'>
+                <Col sm={6} md={4} lg={3}>
+                  <div className='rs-bilan-stat h-100'>
+                    <span className='rs-bilan-stat__label'>Contrats</span>
+                    <span className='rs-bilan-stat__value text-info'>
+                      {nbContrats}
+                    </span>
                   </div>
-                </div>
+                </Col>
+                <Col sm={6} md={4} lg={3}>
+                  <div className='rs-bilan-stat h-100'>
+                    <span className='rs-bilan-stat__label'>Réservations</span>
+                    <span className='rs-bilan-stat__value text-info'>
+                      {nbReservations}
+                    </span>
+                  </div>
+                </Col>
+                <Col sm={6} md={4} lg={3}>
+                  <div className='rs-bilan-stat h-100'>
+                    <span className='rs-bilan-stat__label'>Total payé</span>
+                    <span className='rs-bilan-stat__value rs-bilan-stat__value--num text-success'>
+                      {formatPrice(sumTotalPaye)} F
+                    </span>
+                  </div>
+                </Col>
+                <Col sm={6} md={4} lg={3}>
+                  <div className='rs-bilan-stat h-100'>
+                    <span className='rs-bilan-stat__label'>
+                      Volume (contrats + réservations.)
+                    </span>
+                    <span className='rs-bilan-stat__value rs-bilan-stat__value--num'>
+                      {formatPrice(sumTotalAmount)} F
+                    </span>
+                    <span className='rs-bilan-stat__hint'>
+                      Montant total des Bien sur la période
+                    </span>
+                  </div>
+                </Col>
+                <Col sm={6} md={4} lg={3}>
+                  <div className='rs-bilan-stat h-100'>
+                    <span className='rs-bilan-stat__label'>Commissions</span>
+                    <span className='rs-bilan-stat__value rs-bilan-stat__value--num text-danger'>
+                      {formatPrice(sumTotalComission)} F
+                    </span>
+                  </div>
+                </Col>
+                <Col sm={6} md={4} lg={3}>
+                  <div className='rs-bilan-stat h-100'>
+                    <span className='rs-bilan-stat__label'>Reliquat</span>
+                    <span className='rs-bilan-stat__value rs-bilan-stat__value--num text-danger'>
+                      {formatPrice(reliquat)} F
+                    </span>
+                  </div>
+                </Col>
+                <Col sm={6} md={4} lg={3}>
+                  <div className='rs-bilan-stat h-100'>
+                    <span className='rs-bilan-stat__label'>Dépenses</span>
+                    <span className='rs-bilan-stat__value rs-bilan-stat__value--num text-danger'>
+                      {formatPrice(sumTotalDepense)} F
+                    </span>
+                  </div>
+                </Col>
+                <Col sm={6} md={4} lg={3}>
+                  <div className='rs-bilan-stat h-100 rs-bilan-stat--highlight'>
+                    <span className='rs-bilan-stat__label'>Revenu net</span>
+                    <span
+                      className={`rs-bilan-stat__value rs-bilan-stat__value--num ${
+                        revenueAmount >= 0 ? 'text-success' : 'text-danger'
+                      }`}
+                    >
+                      {formatPrice(revenueAmount)} F
+                    </span>
+                    <span className='rs-bilan-stat__hint'>
+                      Payé − commissions − dépenses
+                    </span>
+                  </div>
+                </Col>
               </Row>
+
               {error && (
-                <div className='text-danger text-center'>
+                <div className='text-danger text-center mb-3'>
                   Erreur de chargement des données
                 </div>
               )}
               {isLoading && <LoadingSpiner />}
 
-              <div className='table-responsive table-card mt-3 mb-1'>
-                {filterPaiement?.length === 0 && (
-                  <div className='text-center text-mutate'>
-                    Aucun paiement trouver !
-                  </div>
-                )}
-                <table
-                  className='table align-middle table-nowrap table-hover'
-                  id='paiementTable'
-                  ref={tableRef}
-                >
-                  <thead className='table-light'>
-                    <tr className='text-center'>
-                      <th>Date de Paiement </th>
-                      <th>Appartement N°</th>
-                      <th>Secteur</th>
-                      <th>Client</th>
-                      <th>Pièce d'identité</th>
-                      <th>Montant Payé</th>
-                    </tr>
-                  </thead>
-
-                  <tbody className='list form-check-all text-center'>
-                    {filterPaiement?.length > 0 &&
-                      filterPaiement?.map((paiement) => {
-                        const client =
-                          paiement?.contrat?.client || paiement?.rental?.client;
-                        const appartement =
-                          paiement?.contrat?.appartement ||
-                          paiement?.rental?.appartement;
-                        const secteur = appartement?.secteur;
-                        return (
-                          <tr key={paiement?._id}>
-                            <th scope='row'>
-                              {new Date(
-                                paiement?.paiementDate
-                              ).toLocaleDateString()}
-                            </th>
-                            <td className='badge bg-info text-light'>
-                              {formatPrice(appartement?.appartementNumber || 0)}
-                            </td>
-                            <td>{capitalizeWords(secteur?.adresse)}</td>
-                            <td>
-                              {capitalizeWords(
-                                client?.firstName + ' ' + client?.lastName
-                              )}
-                            </td>
-
-                            <td>{client?.pieceNumber}</td>
-                            <td>{formatPrice(paiement?.totalPaye) || 0}</td>
-                          </tr>
-                        );
-                      })}
-                  </tbody>
-                </table>
+              <div className='table-responsive table-card rs-table-scroll mt-2 mb-1'>
+                {!isLoading &&
+                  !error &&
+                  (filterPaiement?.length ?? 0) === 0 && (
+                    <div className='text-center text-muted py-4'>
+                      Aucun paiement trouvé.
+                    </div>
+                  )}
+                {!error &&
+                  !isLoading &&
+                  (filterPaiement?.length ?? 0) > 0 && (
+                    <table
+                      className='table rs-data-table align-middle table-nowrap mb-0 table-hover'
+                      id='paiementTable'
+                      ref={tableRef}
+                    >
+                      <thead className='table-light'>
+                        <tr>
+                          <th scope='col' className='rs-th-nowrap text-center'>
+                            Date de paiement
+                          </th>
+                          <th scope='col' className='rs-th-tag text-center'>
+                            Appartement N°
+                          </th>
+                          <th scope='col' className='rs-th-text text-center'>
+                            Secteur
+                          </th>
+                          <th scope='col' className='rs-th-text text-center'>
+                            Client
+                          </th>
+                          <th scope='col' className='rs-th-text text-center'>
+                            Pièce d&apos;identité
+                          </th>
+                          <th scope='col' className='rs-th-num text-center'>
+                            Montant payé
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody className='list form-check-all'>
+                        {filterPaiement?.map((paiement) => {
+                          const client =
+                            paiement?.contrat?.client ||
+                            paiement?.rental?.client;
+                          const appartement =
+                            paiement?.contrat?.appartement ||
+                            paiement?.rental?.appartement;
+                          const secteur = appartement?.secteur;
+                          const clientName = [client?.firstName, client?.lastName]
+                            .filter(Boolean)
+                            .join(' ');
+                          return (
+                            <tr key={paiement?._id}>
+                              <td className='rs-td-nowrap text-center'>
+                                {formatRowDate(paiement?.paiementDate)}
+                              </td>
+                              <td className='rs-td-tag text-center'>
+                                <span className='badge bg-info text-light'>
+                                  {formatPrice(
+                                    appartement?.appartementNumber || 0
+                                  )}
+                                </span>
+                              </td>
+                              <td className='rs-td-text text-center'>
+                                {capitalizeWords(secteur?.adresse)}
+                              </td>
+                              <td className='rs-td-text text-center'>
+                                {clientName
+                                  ? capitalizeWords(clientName)
+                                  : '—'}
+                              </td>
+                              <td className='rs-td-text text-center'>
+                                {client?.pieceNumber ?? '—'}
+                              </td>
+                              <td className='rs-td-num text-center text-success'>
+                                {formatPrice(
+                                  Number(paiement?.totalPaye) || 0
+                                )}{' '}
+                                F
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  )}
               </div>
             </div>
           </CardBody>

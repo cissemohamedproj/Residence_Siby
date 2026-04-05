@@ -11,7 +11,7 @@ import {
   Form,
 } from 'reactstrap';
 
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
 // Formik Validation
 import * as Yup from 'yup';
@@ -20,7 +20,7 @@ import { useFormik } from 'formik';
 // action
 
 // import images
-import { companyLogo } from '../CompanyInfo/CompanyInfo';
+import { companyLogo, companyName, companyOwnerName } from '../CompanyInfo/CompanyInfo';
 import LoadingSpiner from '../components/LoadingSpiner';
 import {
   errorMessageAlert,
@@ -97,11 +97,13 @@ const VerifyCode = () => {
 
   return (
     <React.Fragment>
-      <div className='account-pages my-5 pt-sm-5'>
+      <div className='bg-login rs-auth-page'>
+        <div className='bg-overlay' />
+        <div className='account-pages my-5 pt-sm-5'>
         <Container>
           <Row className='justify-content-center'>
             <Col md={8} lg={6} xl={5}>
-              <Card className='overflow-hidden'>
+              <Card className='rs-auth-card overflow-hidden'>
                 <div className='d-flex justify-content-center align-items-center'>
                   <img
                     src={companyLogo}
@@ -167,19 +169,26 @@ const VerifyCode = () => {
                     </Form>
                   </div>
                   <div className='mt-5 text-center'>
-                    <p className='text-secondary'>
-                      © {new Date().getFullYear()} Santé MARHABA |{' '}
-                      <i className='mdi mdi-heart text-danger'></i> Créé Par{' '}
-                      <Link to={'https://www.cissemohamed.com'} target='blank'>
-                        Cisse Mohamed
-                      </Link>
-                    </p>
-                  </div>
+                  <p className='rs-auth-credit rs-auth-credit--dark mb-0'>
+                    © {new Date().getFullYear()} {companyName}{' '}
+                    {companyOwnerName} |{' '}
+                    <i className='mdi mdi-heart text-danger'></i> Créé par{' '}
+                    <a
+                      href='https://www.mohamedcisse.com'
+                      target='_blank'
+                      rel='noopener noreferrer'
+                      className='rs-auth-credit__link'
+                    >
+                      Cisse Mohamed
+                    </a>
+                  </p>
+                </div>
                 </CardBody>
               </Card>
             </Col>
           </Row>
         </Container>
+        </div>
       </div>
     </React.Fragment>
   );

@@ -14,7 +14,7 @@ export const formatPhoneNumber = (number) => {
 };
 
 export const formatPrice = (number) => {
-  if (number == null) return 'null';
+  if (number == null || number === '') return '—';
 
   // Toujours transformer en string
   const str = number.toString();

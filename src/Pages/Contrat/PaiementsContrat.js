@@ -145,7 +145,7 @@ export default function PaiementsContrat() {
                     )}
                     {isLoading && <LoadingSpiner />}
 
-                    <div className='table-responsive table-card mt-3 mb-1'>
+                    <div className='table-responsive table-card rs-table-scroll mt-3 mb-1'>
                       {filterPaiement?.length === 0 && (
                         <div className='text-center text-mutate'>
                           Aucun paiement trouver !
@@ -153,7 +153,7 @@ export default function PaiementsContrat() {
                       )}
                       {!error && !isLoading && filterPaiement?.length > 0 && (
                         <table
-                          className='table align-middle table-nowrap table-hover'
+                          className='table rs-data-table align-middle table-nowrap table-hover'
                           id='paiementTable'
                         >
                           <thead className='table-light'>

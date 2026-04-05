@@ -6,6 +6,7 @@ import {
   formatPhoneNumber,
   formatPrice,
 } from '../components/capitalizeFunction';
+import DureeSejourDisplay from '../components/DureeSejourDisplay';
 import { useAllRental } from '../../Api/queriesReservation';
 import { useParams } from 'react-router-dom';
 export default function SecteurReservationListe() {
@@ -73,7 +74,7 @@ export default function SecteurReservationListe() {
               {isLoading && <LoadingSpiner />}
 
               <div
-                className='table-responsive table-card mt-3'
+                className='table-responsive table-card rs-table-scroll mt-3'
                 style={{ minHeight: 350 }}
               >
                 {!filteredRental?.length && !isLoading && !error && (
@@ -83,21 +84,21 @@ export default function SecteurReservationListe() {
                 )}
                 {!error && filteredRental?.length > 0 && !isLoading && (
                   <table
-                    className='table align-middle table-nowrap table-hover'
+                    className='table rs-data-table align-middle table-nowrap table-hover'
                     id='contratTable'
                   >
                     <thead className='table-light'>
                       <tr className='text-center'>
                         <th>Date de Reservation</th>
-                        <th>N° d'Appartement</th>
+                        <th>Appartement</th>
                         <th>Secteur</th>
                         <th>Client</th>
-                        <th>Téléphone</th>
-                        <th>Mois</th>
-                        <th>Semaine</th>
+                        {/* <th>Téléphone</th> */}
+                        <th>Durée</th>
+                        {/* <th>Semaine</th>
 
                         <th>Jour</th>
-                        <th>Heure</th>
+                        <th>Heure</th> */}
                       </tr>
                     </thead>
 
@@ -123,25 +124,30 @@ export default function SecteurReservationListe() {
                               }
                             )}
                           </td>
-                          <td className='badge bg-info  rounded rounded-pill text-center text-light'>
-                            {formatPrice(item?.appartement?.appartementNumber)}
+                          <td className='rs-td-tag'>
+                            <span className='badge bg-info rounded rounded-pill text-light'>
+                              {formatPrice(item?.appartement?.appartementNumber)}
+                            </span>
                           </td>
                           <td>{item?.appartement?.secteur?.adresse}</td>
                           <td>
-                            {capitalizeWords(
+                           <p className='mb-0 '>{capitalizeWords(
                               item?.client?.firstName +
                                 ' ' +
                                 item?.client?.lastName
-                            )}{' '}
-                          </td>
-                          <td>
-                            {formatPhoneNumber(item?.client?.phoneNumber)}{' '}
-                          </td>
+                            )}</p>
 
-                          <td>{formatPrice(item.mois || 0)} </td>
-                          <td>{formatPrice(item.semaine || 0)}</td>
-                          <td>{formatPrice(item.jour || 0)}</td>
-                          <td>{formatPrice(item.heure || 0)}</td>
+                            <p>{formatPhoneNumber(item?.client?.phoneNumber)}{' '}</p>
+                          </td>
+                          
+                          <td className='align-middle'>
+                            <DureeSejourDisplay
+                              mois={item.mois}
+                              semaine={item.semaine}
+                              jour={item.jour}
+                              heure={item.heure}
+                            />
+                          </td>
                         </tr>
                       ))}
                     </tbody>

@@ -139,7 +139,7 @@ export default function ClientListe() {
                     )}
                     {isLoading && <LoadingSpiner />}
 
-                    <div className='table-responsive table-card mt-3 mb-1'>
+                    <div className='table-responsive table-card rs-table-scroll mt-3 mb-1'>
                       {!filteredClient?.length && !isLoading && !error && (
                         <div className='text-center text-mutate'>
                           Aucun Clients trouvée !
@@ -147,30 +147,48 @@ export default function ClientListe() {
                       )}
                       {!error && filteredClient?.length > 0 && !isLoading && (
                         <table
-                          className='table align-middle table-nowrap table-hover'
+                          className='table rs-data-table align-middle table-nowrap table-hover'
                           id='fournisseurTable'
                         >
                           <thead className='table-light'>
-                            <tr className='text-center'>
-                              <th scope='col' style={{ width: '50px' }}>
+                            <tr>
+                              <th
+                                scope='col'
+                                className='rs-th-num'
+                                style={{ width: '50px' }}
+                              >
                                 ID
                               </th>
-                              <th style={{ width: '20px' }}></th>
-                              <th>Nom</th>
-                              <th>Prénom</th>
-                              <th>Pièce d'identité</th>
-
-                              <th>Téléphone</th>
-
-                              <th>Action</th>
+                              <th
+                                scope='col'
+                                className='rs-th-actions'
+                                style={{ width: '20px' }}
+                              ></th>
+                              <th scope='col' className='rs-th-text'>
+                                Nom
+                              </th>
+                              <th scope='col' className='rs-th-text'>
+                                Prénom
+                              </th>
+                              <th scope='col' className='rs-th-nowrap'>
+                                Pièce d'identité
+                              </th>
+                              <th scope='col' className='rs-th-nowrap'>
+                                Téléphone
+                              </th>
+                              <th scope='col' className='rs-th-actions'>
+                                Action
+                              </th>
                             </tr>
                           </thead>
 
-                          <tbody className='list form-check-all text-center'>
+                          <tbody className='list form-check-all'>
                             {filteredClient?.map((client, index) => (
-                              <tr key={client._id} className='text-center'>
-                                <th scope='row'>{index + 1}</th>
-                                <td>
+                              <tr key={client._id}>
+                                <th className='rs-td-num' scope='row'>
+                                  {index + 1}
+                                </th>
+                                <td className='rs-td-actions'>
                                   <button
                                     type='button'
                                     className='btn text-info position-relative'
@@ -185,14 +203,22 @@ export default function ClientListe() {
                                     </span>
                                   </button>
                                 </td>
-                                <td>{capitalizeWords(client.firstName)} </td>
-                                <td>{capitalizeWords(client.lastName)} </td>
-                                <td>{client.pieceNumber} </td>
+                                <td className='rs-td-text'>
+                                  {capitalizeWords(client.firstName)}{' '}
+                                </td>
+                                <td className='rs-td-text'>
+                                  {capitalizeWords(client.lastName)}{' '}
+                                </td>
+                                <td className='rs-td-nowrap'>
+                                  {client.pieceNumber}{' '}
+                                </td>
 
-                                <td>{formatPhoneNumber(client.phoneNumber)}</td>
+                                <td className='rs-td-nowrap'>
+                                  {formatPhoneNumber(client.phoneNumber)}
+                                </td>
 
                                 {connectedUserRole === 'admin' && (
-                                  <td className='text-center'>
+                                  <td className='rs-td-actions'>
                                     {isDeleting && <LoadingSpiner />}
                                     {!isDeleting && (
                                       <div className='d-flex justify-content-center align-items-center gap-2'>

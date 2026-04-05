@@ -15,6 +15,7 @@ import Breadcrumbs from '../../components/Common/Breadcrumb';
 import FormModal from '../components/FormModal';
 import LoadingSpiner from '../components/LoadingSpiner';
 import { formatPrice } from '../components/capitalizeFunction';
+import DureeSejourDisplay from '../components/DureeSejourDisplay';
 import {
   deleteButton,
   errorMessageAlert,
@@ -206,7 +207,7 @@ export default function ClientContratListe() {
                     {isLoading && <LoadingSpiner />}
 
                     <div
-                      className='table-responsive table-card mt-3'
+                      className='table-responsive table-card rs-table-scroll mt-3'
                       style={{ minHeight: 350 }}
                     >
                       {!filteredContrat?.length && !isLoading && !error && (
@@ -216,7 +217,7 @@ export default function ClientContratListe() {
                       )}
                       {!error && filteredContrat?.length > 0 && !isLoading && (
                         <table
-                          className='table align-middle table-nowrap table-hover '
+                          className='table rs-data-table align-middle table-nowrap table-hover '
                           id='fournisseurTable'
                         >
                           <thead className='table-light'>
@@ -226,11 +227,7 @@ export default function ClientContratListe() {
                               <th>Secteur</th>
                               <th>Date D'Entrée</th>
                               <th>Date de Sortie</th>
-                              <th>Mois</th>
-                              <th>Semaine</th>
-
-                              <th>Jour</th>
-                              <th>Heure</th>
+                              <th>Durée</th>
                               <th>Montant</th>
                               <th>Remise</th>
                               <th>Après Remise</th>
@@ -250,10 +247,12 @@ export default function ClientContratListe() {
                                 >
                                   {contrat?.statut ? 'En cours' : 'Terminé'}
                                 </td>
-                                <td className='badge bg-info  rounded rounded-pill text-center text-light'>
-                                  {formatPrice(
-                                    contrat?.appartement?.appartementNumber
-                                  )}
+                                <td className='rs-td-tag'>
+                                  <span className='badge bg-info rounded rounded-pill text-light'>
+                                    {formatPrice(
+                                      contrat?.appartement?.appartementNumber
+                                    )}
+                                  </span>
                                 </td>
                                 <td>
                                   {contrat?.appartement?.secteur?.adresse}
@@ -295,11 +294,14 @@ export default function ClientContratListe() {
                                     }
                                   )}{' '}
                                 </td>
-                                <td>{formatPrice(contrat.mois)} </td>
-
-                                <td>{formatPrice(contrat.semaine || 0)}</td>
-                                <td>{formatPrice(contrat.jour || 0)}</td>
-                                <td>{formatPrice(contrat.heure || 0)}</td>
+                                <td className='align-middle'>
+                                  <DureeSejourDisplay
+                                    mois={contrat.mois}
+                                    semaine={contrat.semaine}
+                                    jour={contrat.jour}
+                                    heure={contrat.heure}
+                                  />
+                                </td>
                                 <td>{formatPrice(contrat.amount || 0)} F</td>
                                 <td>{formatPrice(contrat.reduction || 0)} F</td>
                                 <td>

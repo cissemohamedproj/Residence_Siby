@@ -9,24 +9,14 @@ import {
 
 export default function RecuHeader() {
   return (
-    <div className='d-flex flex-column justify-content-center align-items-center position-relative'>
+    <div className='rs-recu-header d-flex flex-column justify-content-center align-items-center position-relative'>
       <h3 className='text-info'>RESIDENCE SIBY </h3>
       <img
         src={companyLogo}
         alt='Logo'
-        style={{
-          position: 'absolute',
-          top: 5,
-          left: -30,
-          width: 180,
-        }}
+        className='rs-recu-header-logo-left'
       />
-      <h6
-        style={{
-          width: '50%',
-        }}
-        className='text-center text-light bg-info font-size-11  px-2 py-1 rounded-3 mx-auto mb-2'
-      >
+      <h6 className='text-center text-light bg-info font-size-11 px-2 py-1 rounded-3 mx-auto mb-2 rs-recu-header-badge'>
         {' '}
         Commerce Général & Immobilier
       </h6>
@@ -40,12 +30,7 @@ export default function RecuHeader() {
       <img
         src={homeImg}
         alt='Logo'
-        style={{
-          position: 'absolute',
-          top: 5,
-          right: -10,
-          width: 120,
-        }}
+        className='rs-recu-header-img-right'
       />
     </div>
   );

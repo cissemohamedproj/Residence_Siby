@@ -9,12 +9,12 @@ import {
 
 import { AuthContext } from '../../../Auth/AuthContext';
 import { connectedUserName } from '../../../Pages/Authentication/userInfos';
-import { Link } from 'react-router-dom';
+import {  useNavigate } from 'react-router-dom';
 
 const ProfileMenu = (props) => {
   // Declare a new state variable, which we'll call "menu"
   const [menu, setMenu] = useState(false);
-
+  const navigate = useNavigate();
   const { logout } = useContext(AuthContext);
   // const handleLogout = logout();
 
@@ -36,12 +36,12 @@ const ProfileMenu = (props) => {
           <i className='mdi mdi-chevron-down d-xl-inline-block' />
         </DropdownToggle>
         <DropdownMenu className='dropdown-menu-end'>
-          <DropdownItem className='bg-dark'>
-            <Link to='/userprofile' className='text-light'>
-              {' '}
-              <i className='ri-user-line align-middle me-2' />
-              Profile{' '}
-            </Link>
+          <DropdownItem
+            onClick={() => navigate('/userprofile')}
+            className='rs-profile-menu-item'
+          >
+            <i className='ri-user-line align-middle me-2' />
+            Mon profil
           </DropdownItem>
 
           <div className='dropdown-divider' />

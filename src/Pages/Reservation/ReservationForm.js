@@ -196,6 +196,12 @@ const ReservationForm = ({ reservationToEdit, clientId, tog_form_modal }) => {
 
   const today = new Date();
 
+
+   // Date initiale pour la date d'entrée = Demain
+   const initialDatePlus1Day = new Date(today).setDate(today.getDate() + 1);
+   const initialDatePlus1DayFormatted = new Date(initialDatePlus1Day).toISOString().substring(0, 10);
+ 
+
   return (
     <Form
       className='needs-validation'
@@ -361,9 +367,7 @@ const ReservationForm = ({ reservationToEdit, clientId, tog_form_modal }) => {
               name='rentalDate'
               placeholder="Entrez la date d'Entrée..."
               type='date'
-              min={new Date(today.setDate(today.getDate() + 2))
-                .toISOString()
-                .substring(0, 10)}
+              min={initialDatePlus1DayFormatted}
               className='form-control border-1 border-dark'
               id='rentalDate'
               onChange={(e) => {

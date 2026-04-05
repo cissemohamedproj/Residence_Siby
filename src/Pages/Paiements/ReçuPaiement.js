@@ -19,6 +19,13 @@ import { useOnePaiement } from '../../Api/queriesPaiement';
 import { companyName } from '../CompanyInfo/CompanyInfo';
 import RecuHeader from './ReçueHeader';
 
+const formatRecuDate = (raw, options) => {
+  if (raw == null || raw === '') return '—';
+  const d = new Date(raw);
+  if (Number.isNaN(d.getTime())) return '—';
+  return d.toLocaleDateString('fr-FR', options);
+};
+
 const ReçuPaiement = ({
   show_modal,
   tog_show_modal,
@@ -63,14 +70,36 @@ const ReçuPaiement = ({
     selectedPaiement?.contrat?.appartement ||
     selectedPaiement?.rental?.appartement;
 
-  const start = new Date(contrat?.startDate);
-  const end = new Date(contrat?.endDate);
+  /** Contrat / location : la prop `contrat` n'est pas toujours passée (ex. liste des paiements) */
+  const contratSource =
+    contrat ?? selectedPaiement?.contrat ?? selectedPaiement?.rental ?? null;
 
-  // Différence en millisecondes
-  const diffInMs = end - start;
+  const startRaw =
+    contratSource?.startDate ?? contratSource?.rentalDate ?? null;
+  const endRaw = contratSource?.endDate ?? contratSource?.rentalEndDate ?? null;
 
-  // Conversion en jours
-  const countDays = Math.ceil(diffInMs / (1000 * 60 * 60 * 24));
+  const startD = startRaw != null ? new Date(startRaw) : null;
+  const endD = endRaw != null ? new Date(endRaw) : null;
+
+  const diffInMs =
+    startD &&
+    endD &&
+    !Number.isNaN(startD.getTime()) &&
+    !Number.isNaN(endD.getTime())
+      ? endD - startD
+      : NaN;
+
+  const countDays = Number.isNaN(diffInMs)
+    ? null
+    : Math.ceil(diffInMs / (1000 * 60 * 60 * 24));
+
+  const totalMontant =
+    contratSource?.totalAmount ?? contratSource?.amount ?? 0;
+  const netPayeLine = totalPaye ?? selectedPaiement?.totalPaye ?? 0;
+  const reliquaLine =
+    totalReliqua !== undefined && totalReliqua !== null
+      ? totalReliqua
+      : totalMontant - netPayeLine;
 
   return (
     <Modal
@@ -112,23 +141,13 @@ const ReçuPaiement = ({
       </div>
 
       {/* Modal Body */}
-      <div className='modal-body' ref={contentRef}>
+      <div className='modal-body rs-recu-modal-body' ref={contentRef}>
         {!error && !isLoading && (
           <div
-            className='mx-5 py-3 d-flex justify-content-center'
+            className='mx-5 py-3 d-flex justify-content-center rs-recu-root'
             id='reçu_de_paiement'
           >
-            <Card
-              style={{
-                boxShadow: '0px 0px 10px rgba(100, 169, 238, 0.5)',
-                borderRadius: '15px',
-                width: '583px',
-                margin: '20px auto',
-                position: 'relative',
-                padding: '10px 0',
-                border: '2px solid #c222ab',
-              }}
-            >
+            <Card className='rs-recu-card'>
               <RecuHeader />
               <CardBody className='mt-2'>
                 <div className='d-flex justify-content-center align-items-center flex-column'>
@@ -152,23 +171,20 @@ const ReçuPaiement = ({
                   </p>
                 </div>
 
-                <div className='d-flex justify-content-around align-items-center  px-2 '>
+                <div className='d-flex justify-content-around align-items-center px-2 rs-recu-two-col'>
                   <div>
                     <CardText>
                       <strong> Date d'Entrée:</strong>{' '}
-                      {new Date(contrat?.startDate).toLocaleDateString(
-                        'fr-Fr',
-                        {
-                          weekday: 'short',
-                          day: '2-digit',
-                          month: 'numeric',
-                          year: 'numeric',
-                        }
-                      )}
+                      {formatRecuDate(startRaw, {
+                        weekday: 'short',
+                        day: '2-digit',
+                        month: 'numeric',
+                        year: 'numeric',
+                      })}
                     </CardText>
                     <CardText>
                       <strong> Date de Sortie:</strong>{' '}
-                      {new Date(contrat?.endDate).toLocaleDateString('fr-Fr', {
+                      {formatRecuDate(endRaw, {
                         weekday: 'short',
                         day: '2-digit',
                         month: 'numeric',
@@ -176,36 +192,30 @@ const ReçuPaiement = ({
                       })}
                     </CardText>
                     <h6>
-                      Durée: {countDays}
-                      {countDays > 1 ? ' jours' : ' jour'}
+                      Durée:{' '}
+                      {countDays == null
+                        ? '—'
+                        : `${countDays}${countDays > 1 ? ' jours' : ' jour'}`}
                     </h6>
                   </div>
-                  <div
-                    className='border border-1 border-dark'
-                    style={{ width: '2px', height: '160px' }}
-                  ></div>
+                  <div className='rs-recu-divider' aria-hidden />
 
                   <div className='my-3'>
                     <CardText>
                       <strong> Montant Total: </strong>
-                      {formatPrice(contrat?.totalAmount || 0)} F
+                      {formatPrice(totalMontant)} F
                     </CardText>
                     <CardText>
                       <strong>Net Payé: </strong>
-                      {formatPrice(totalPaye || selectedPaiement?.totalPaye)} F
+                      {formatPrice(netPayeLine)} F
                     </CardText>
                     <CardText>
                       <strong> Reliquat: </strong>
-                      {formatPrice(
-                        contrat?.totalAmount - totalPaye || totalReliqua
-                      )}{' '}
-                      F
+                      {formatPrice(reliquaLine)} F
                     </CardText>
                     <CardText>
                       <strong> Date de paiement:</strong>{' '}
-                      {new Date(
-                        selectedPaiement?.paiementDate
-                      ).toLocaleDateString('fr-Fr', {
+                      {formatRecuDate(selectedPaiement?.paiementDate, {
                         weekday: 'long',
                         year: 'numeric',
                         day: '2-digit',

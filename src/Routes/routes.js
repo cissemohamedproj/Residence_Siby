@@ -27,6 +27,7 @@ import AllAppartements from '../Pages/Appartements/AllAppartements.js';
 import InitialPage from '../Pages/InitialPage/InitialPage.js';
 import ReservationListe from '../Pages/Reservation/ReservationListe.js';
 import Bilans from '../Pages/Bilans/Bilans.js';
+import RapportsStatistiques from '../Pages/Rapports/RapportsStatistiques.js';
 import ComissionListe from '../Pages/Comission/ComissionListe.js';
 
 // Routes pour les ADMINS
@@ -59,6 +60,7 @@ const authProtectedRoutes = [
 
   // Raports & Bilans
   { path: '/bilans', component: <Bilans /> },
+  { path: '/rapports', component: <RapportsStatistiques /> },
 
   // --------------------------------------------------------
 ];

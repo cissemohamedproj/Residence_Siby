@@ -13,34 +13,37 @@ import SecteurReservationListe from './SecteurReservationListe';
 export default function SelectedSecteur() {
   return (
     <React.Fragment>
-      <div className='page-content bg-light'>
+      <div className='page-content bg-light rs-selected-layout'>
         <Container fluid={true}>
-          <div className='d-flex justify-content-center align-items-center gap-4'>
+          <div className='rs-nav-cluster'>
             <BackButton />
             <DashboardButton />
             <HomeButton />
           </div>
-          <Row>
-            <Col sm={12} style={{ height: '700px', overflowY: 'scroll' }}>
-              <AppartementListe />
+
+          <Row className='g-4'>
+            <Col xs={12}>
+              <section className='rs-section-panel rs-section-panel--scroll' style={{ minHeight: '850px' }}>
+                <AppartementListe />
+              </section>
             </Col>
 
-            <Col
-              sm={12}
-              style={{ height: '400px', overflowY: 'scroll', margin: '10% 0' }}
-            >
-              <SecteurContrat />
+            <Col xs={12}>
+              <section className='rs-section-panel rs-section-panel--scroll'>
+                <SecteurContrat />
+              </section>
             </Col>
 
-            <Col
-              sm={12}
-              style={{ height: '400px', overflowY: 'scroll', margin: '10% 0' }}
-            >
-              <SecteurReservationListe />
+            <Col xs={12}>
+              <section className='rs-section-panel rs-section-panel--scroll'>
+                <SecteurReservationListe />
+              </section>
             </Col>
 
-            <Col sm={12} style={{ height: '400px', margin: '10% 0' }}>
-              <ContratPaiements />
+            <Col xs={12}>
+              <section className='rs-section-panel rs-section-panel--short'>
+                <ContratPaiements />
+              </section>
             </Col>
           </Row>
         </Container>

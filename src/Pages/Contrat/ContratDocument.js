@@ -75,7 +75,7 @@ export default function ContractDocument() {
       <Container fluid>
         <BackButton />
 
-        <div className='modal-header'>
+        <div className='modal-header rs-doc-toolbar'>
           <div className='d-flex gap-1 justify-content-around align-items-center w-100'>
             <Button
               color='info'
@@ -99,23 +99,16 @@ export default function ContractDocument() {
 
         {loadingContrat && <LoadingSpiner />}
 
-        <div id='contrat' ref={contentRef}>
+        <div id='contrat' ref={contentRef} className='rs-contrat-doc-page'>
           {!loadingContrat && !errorContrat && (
-            <Card className='p-4 '>
-              <h1
-                className='text-center text-info'
-                style={{
-                  margin: '5% auto',
-                  textTransform: 'uppercase',
-                  textDecoration: 'underline',
-                }}
-              >
+            <Card className='p-4 rs-contrat-doc-card'>
+              <h1 className='text-center text-info rs-contrat-doc-title'>
                 CONTRAT DE LOCATION
               </h1>
-              <div style={{ marginBottom: '2%' }}>
+              <div className='rs-contrat-doc-header-block'>
                 <RecuHeader />
               </div>
-              <div className='d-flex flex-nowrap justify-content-around align-items-center'>
+              <div className='d-flex justify-content-around align-items-start rs-contrat-doc-columns'>
                 <div>
                   <p>
                     {' '}
@@ -160,7 +153,7 @@ export default function ContractDocument() {
                 </div>
               </div>
 
-              <CardBody>
+              <CardBody className='rs-contrat-doc-body'>
                 <h6 className='text-center'>
                   {' '}
                   IL A ÉTÉ CONVENU ET ARRETE CE QUI SUIT{' '}
@@ -415,6 +408,58 @@ export default function ContractDocument() {
                     </ol>
                   </li>
 
+
+<li >
+  <strong>
+  Règlements Intérieurs
+    </strong> 
+  </li>
+<p>
+
+Chez 
+<strong> GROUPE SIBY</strong>
+, l’appartement meublé  est strictement donné  en location 
+à  des personnes souhaitant passer un séjour paisible et respectueux. 
+
+</p>
+
+<p>
+
+L’endroit est fait uniquement pour que le locataire puisse passer son séjour 
+dans la paix et la tranquillité . 
+Nous n’acceptons pas que les lieux soient utilisés à  des fins d’amusement 
+abusif, comme transformer l’appartement en bar ou organiser des fêtes 
+bruyantes. Toute activité  immorale, telle que l’exploitation d’hommes ou de 
+femmes dans le but d’obtenir de l’argent, est également interdite. Même sans 
+échange d’argent, ce type de comportement est strictement interdit 
+chez <strong> 
+  GROUPE SIBY, sauf s’il s’agit de votre conjoint ou conjointe.    
+  </strong> 
+ </p>
+ 
+ <p>
+  
+Il est formellement interdit de louer un appartement puis de le relouer à  
+une autre personne, sans l’autorisation expresse de <strong>  GROUPE SIBY.  </strong> 
+
+  </p>
+  <p className='font-weight-bold'>
+    
+Toute activité interdite par les lois du pays est également strictement 
+prohibée dans les lieux. Tout ce qui est interdit par l’État est 
+formellement interdit dans notre Résidence.  
+ 
+ </p>
+
+ <p>
+  
+<strong>
+  GROUPE SIBY 
+</strong> 
+souhaite travailler dans la transparence et vous remercie de 
+votre confiance.
+
+</p>
                   <li>
                     <strong> Election de domicile</strong>
                   </li>
@@ -444,10 +489,7 @@ export default function ContractDocument() {
                     }
                   )}{' '}
                 </h6>
-                <div
-                  className='d-flex justify-content-between align-items-center'
-                  style={{ margin: '5px auto' }}
-                >
+                <div className='d-flex justify-content-between align-items-center rs-contrat-doc-signatures'>
                   <h4> LE BAILLEUR</h4>
                   <h4> LE LOCATAIRE</h4>
                 </div>

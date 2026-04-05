@@ -92,7 +92,7 @@ export default function AllAppartements() {
                     )}
                     {isLoading && <LoadingSpiner />}
 
-                    <div className='table-responsive table-card mt-3 mb-1'>
+                    <div className='table-responsive table-card rs-table-scroll mt-3 mb-1'>
                       {!filterAppartement?.length && !isLoading && !error && (
                         <div className='text-center text-mutate'>
                           Aucun Appartement dans ce Secteur !
@@ -102,7 +102,7 @@ export default function AllAppartements() {
                         filterAppartement?.length > 0 &&
                         !isLoading && (
                           <table
-                            className='table align-middle table-nowrap table-hover'
+                            className='table rs-data-table align-middle table-nowrap table-hover'
                             id='appartementTable'
                           >
                             <thead className='table-light'>
@@ -126,10 +126,12 @@ export default function AllAppartements() {
                             <tbody className='list form-check-all text-center'>
                               {filterAppartement?.map((appart) => (
                                 <tr key={appart?._id} className='text-center'>
-                                  <td className='badge bg-info text-light'>
-                                    {formatPhoneNumber(
-                                      appart?.appartementNumber
-                                    )}
+                                  <td className='rs-td-tag'>
+                                    <span className='badge bg-info text-light'>
+                                      {formatPhoneNumber(
+                                        appart?.appartementNumber
+                                      )}
+                                    </span>
                                   </td>
                                   <td>
                                     {appart?.isAvailable ? (

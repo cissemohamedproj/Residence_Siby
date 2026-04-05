@@ -19,6 +19,7 @@ import {
   formatPhoneNumber,
   formatPrice,
 } from '../components/capitalizeFunction';
+import DureeSejourDisplay from '../components/DureeSejourDisplay';
 import {
   deleteButton,
   errorMessageAlert,
@@ -206,7 +207,7 @@ export default function ContratListe() {
                     {isLoading && <LoadingSpiner />}
 
                     <div
-                      className='table-responsive table-card mt-3'
+                      className='table-responsive table-card rs-table-scroll mt-3'
                       style={{ minHeight: 350 }}
                     >
                       {!filteredContrat?.length && !isLoading && !error && (
@@ -216,63 +217,86 @@ export default function ContratListe() {
                       )}
                       {!error && filteredContrat?.length > 0 && !isLoading && (
                         <table
-                          className='table align-middle table-nowrap table-hover'
+                          className='table rs-data-table align-middle table-nowrap table-hover'
                           id='contratTable'
                         >
                           <thead className='table-light'>
-                            <tr className='text-center'>
-                              <th>Statut</th>
-                              <th>N° d'appartement</th>
-                              <th>Secteur</th>
-                              <th>Client</th>
-                              <th>Téléphone</th>
-                              <th>Date d'entrée</th>
-                              <th>Date de Sortie</th>
-                              <th>Mois</th>
-                              <th>Semaine</th>
-
-                              <th>Jour</th>
-                              <th>Heure</th>
-                              <th>Montant</th>
-                              <th>Remise</th>
-                              <th>Après Remise</th>
-                              <th>Comission</th>
-
-                              <th>Action</th>
+                            <tr>
+                              <th scope='col' className='rs-th-tag'>
+                                Statut
+                              </th>
+                              <th scope='col' className='rs-th-tag'>
+                                N° d'appartement
+                              </th>
+                              <th scope='col' className='rs-th-text'>
+                                Secteur
+                              </th>
+                              <th scope='col' className='rs-th-text'>
+                                Client
+                              </th>
+                              <th scope='col' className='rs-th-nowrap'>
+                                Téléphone
+                              </th>
+                              <th scope='col' className='rs-th-nowrap'>
+                                Date d'entrée
+                              </th>
+                              <th scope='col' className='rs-th-nowrap'>
+                                Date de Sortie
+                              </th>
+                              <th scope='col' className='rs-th-text text-center'>
+                                Durée
+                              </th>
+                              <th scope='col' className='rs-th-num'>
+                                Montant
+                              </th>
+                              <th scope='col' className='rs-th-num'>
+                                Remise
+                              </th>
+                              <th scope='col' className='rs-th-num'>
+                                Après Remise
+                              </th>
+                              <th scope='col' className='rs-th-num'>
+                                Comission
+                              </th>
+                              <th scope='col' className='rs-th-actions'>
+                                Action
+                              </th>
                             </tr>
                           </thead>
 
-                          <tbody className='list form-check-all text-center'>
+                          <tbody className='list form-check-all'>
                             {filteredContrat?.map((contrat) => (
-                              <tr key={contrat?._id} className='text-center'>
+                              <tr key={contrat?._id}>
                                 <td
-                                  className={` text-light ${
+                                  className={`rs-td-status text-light ${
                                     contrat?.statut ? 'bg-success' : 'bg-danger'
                                   }`}
                                 >
                                   {contrat?.statut ? 'En cours' : 'Terminé'}
                                 </td>
-                                <td className='badge bg-info  rounded rounded-pill text-center text-light'>
-                                  {formatPrice(
-                                    contrat?.appartement?.appartementNumber
-                                  )}
+                                <td className='rs-td-tag'>
+                                  <span className='badge bg-info rounded rounded-pill text-light'>
+                                    {formatPrice(
+                                      contrat?.appartement?.appartementNumber
+                                    )}
+                                  </span>
                                 </td>
-                                <td>
+                                <td className='rs-td-text'>
                                   {contrat?.appartement?.secteur?.adresse}
                                 </td>
-                                <td>
+                                <td className='rs-td-text'>
                                   {capitalizeWords(
                                     contrat?.client?.firstName +
                                       ' ' +
                                       contrat?.client?.lastName
                                   )}{' '}
                                 </td>
-                                <td>
+                                <td className='rs-td-nowrap'>
                                   {formatPhoneNumber(
                                     contrat?.client?.phoneNumber
                                   )}{' '}
                                 </td>
-                                <td>
+                                <td className='rs-td-nowrap'>
                                   {new Date(
                                     contrat?.startDate
                                   ).toLocaleDateString('fr-Fr', {
@@ -283,7 +307,7 @@ export default function ContratListe() {
                                   })}{' '}
                                 </td>
                                 <td
-                                  className={`${
+                                  className={`rs-td-nowrap ${
                                     new Date(contrat.endDate)
                                       .toISOString()
                                       .substring(0, 10) > today
@@ -309,20 +333,29 @@ export default function ContratListe() {
                                   })}{' '}
                                 </td>
 
-                                <td>{formatPrice(contrat.mois)} </td>
-
-                                <td>{formatPrice(contrat.semaine || 0)}</td>
-                                <td>{formatPrice(contrat.jour || 0)}</td>
-                                <td>{formatPrice(contrat.heure || 0)}</td>
-                                <td>{formatPrice(contrat.amount || 0)} F</td>
-                                <td>{formatPrice(contrat.reduction || 0)} F</td>
-                                <td>
+                                <td className='rs-td-text text-center align-middle'>
+                                  <DureeSejourDisplay
+                                    mois={contrat.mois}
+                                    semaine={contrat.semaine}
+                                    jour={contrat.jour}
+                                    heure={contrat.heure}
+                                  />
+                                </td>
+                                <td className='rs-td-num'>
+                                  {formatPrice(contrat.amount || 0)} F
+                                </td>
+                                <td className='rs-td-num'>
+                                  {formatPrice(contrat.reduction || 0)} F
+                                </td>
+                                <td className='rs-td-num'>
                                   {formatPrice(contrat.totalAmount || 0)} F
                                 </td>
-                                <td>{formatPrice(contrat.comission || 0)} F</td>
+                                <td className='rs-td-num'>
+                                  {formatPrice(contrat.comission || 0)} F
+                                </td>
 
                                 {connectedUserRole === 'admin' && (
-                                  <td className='text-center'>
+                                  <td className='rs-td-actions'>
                                     {isSubmitting ||
                                       (isDeleting && <LoadingSpiner />)}
                                     {!isSubmitting && !isDeleting && (

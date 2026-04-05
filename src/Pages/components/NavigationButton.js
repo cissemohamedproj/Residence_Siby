@@ -5,7 +5,12 @@ const BackButton = () => {
   const navigate = useNavigate();
 
   return (
-    <Button color='warning' className='my-2' onClick={() => navigate(-1)}>
+    <Button
+      color='warning'
+      className='rs-nav-btn'
+      outline
+      onClick={() => navigate(-1)}
+    >
       <i className='bx bx-arrow-back me-1' />
       Retour
     </Button>
@@ -18,7 +23,7 @@ const HomeButton = () => {
   return (
     <Button
       color='info'
-      className='my-2 text-light'
+      className='rs-nav-btn text-white'
       onClick={() => {
         navigate('/home');
         localStorage.removeItem('selectedSecteur');
@@ -36,7 +41,7 @@ const DashboardButton = () => {
   return (
     <Button
       color='dark'
-      className='my-2 text-light'
+      className='rs-nav-btn text-white'
       onClick={() => navigate('/dashboard')}
     >
       <i className='fas fa-server me-1' />

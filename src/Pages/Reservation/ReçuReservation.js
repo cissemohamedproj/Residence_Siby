@@ -102,23 +102,13 @@ const ReçuReservation = ({ show_modal, tog_show_modal, selectedRental }) => {
       </div>
 
       {/* Modal Body */}
-      <div className='modal-body' ref={contentRef}>
+      <div className='modal-body rs-recu-modal-body' ref={contentRef}>
         {!error && !isLoading && (
           <div
-            className='mx-5 py-3 d-flex justify-content-center'
+            className='mx-5 py-3 d-flex justify-content-center rs-recu-root'
             id='reçu_de_paiement_reservation'
           >
-            <Card
-              style={{
-                boxShadow: '0px 0px 10px rgba(100, 169, 238, 0.5)',
-                borderRadius: '15px',
-                width: '583px',
-                margin: '20px auto',
-                position: 'relative',
-                padding: '10px 0',
-                border: '2px solid #c222ab',
-              }}
-            >
+            <Card className='rs-recu-card'>
               <RecuHeader />
               <CardBody className='mt-2'>
                 <div className='d-flex justify-content-center align-items-center flex-column'>
@@ -142,7 +132,7 @@ const ReçuReservation = ({ show_modal, tog_show_modal, selectedRental }) => {
                   </p>
                 </div>
 
-                <div className='d-flex justify-content-around align-items-center  px-2 '>
+                <div className='d-flex justify-content-around align-items-center px-2 rs-recu-two-col'>
                   <div>
                     <CardText>
                       <strong> Date de Reservation:</strong>{' '}
@@ -167,10 +157,7 @@ const ReçuReservation = ({ show_modal, tog_show_modal, selectedRental }) => {
                       {countDays > 1 ? ' jours' : ' jour'}
                     </h6> */}
                   </div>
-                  <div
-                    className='border border-1 border-dark'
-                    style={{ width: '2px', height: '160px' }}
-                  ></div>
+                  <div className='rs-recu-divider' aria-hidden />
 
                   <div className='my-3'>
                     <CardText>

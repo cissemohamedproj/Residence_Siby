@@ -24,18 +24,8 @@ const TotalSecteur = () => {
     <div onClick={() => handleNavigate()} style={{ cursor: 'pointer' }}>
       {loadingSecteur && <LoadingSpiner />}
       {!errorSecteur && !loadingSecteur && (
-        <Card
-          style={{
-            height: '180px',
-            border: '1px solid #023047',
-            boxShadow: '1px 0px 10px rgba(2, 5, 116, 0.32)',
-          }}
-          className='d-flex gap-3  flex-column justify-content-center align-items-center'
-        >
-          <i
-            className='fas fa-bezier-curve text-info'
-            style={{ fontSize: '50px' }}
-          ></i>
+        <Card className='rs-stat-card d-flex gap-3 flex-column justify-content-center align-items-center'>
+          <i className='fas fa-bezier-curve text-info rs-stat-icon'></i>
 
           <h3 className='text-info'>{secteurs?.length}</h3>
           <h5>Secteurs</h5>
@@ -56,18 +46,8 @@ const TotalAppartement = () => {
     >
       {loading && <LoadingSpiner />}
       {!error && !loading && (
-        <Card
-          style={{
-            height: '180px',
-            border: '1px solid #023047',
-            boxShadow: '1px 0px 10px rgba(2, 5, 116, 0.32)',
-          }}
-          className='d-flex gap-3  flex-column justify-content-center align-items-center'
-        >
-          <i
-            className=' fas fa-home text-info'
-            style={{ fontSize: '50px' }}
-          ></i>
+        <Card className='rs-stat-card d-flex gap-3 flex-column justify-content-center align-items-center'>
+          <i className='fas fa-home text-info rs-stat-icon'></i>
 
           <h3 className='text-info'>{appartement?.length}</h3>
           <h5>Appartements</h5>
@@ -85,18 +65,8 @@ const TotalClient = () => {
     <div style={{ cursor: 'pointer' }} onClick={() => navigate('/clients')}>
       {loading && <LoadingSpiner />}
       {!error && !loading && (
-        <Card
-          style={{
-            height: '180px',
-            border: '1px solid #023047',
-            boxShadow: '1px 0px 10px rgba(2, 5, 116, 0.32)',
-          }}
-          className='d-flex gap-3  flex-column justify-content-center align-items-center'
-        >
-          <i
-            className=' fas fa-users text-info'
-            style={{ fontSize: '50px' }}
-          ></i>
+        <Card className='rs-stat-card d-flex gap-3 flex-column justify-content-center align-items-center'>
+          <i className='fas fa-users text-info rs-stat-icon'></i>
 
           <h3 className='text-info'>{clients?.length}</h3>
           <h5>Clients</h5>
@@ -114,18 +84,8 @@ const TotalContrat = () => {
     <div onClick={() => navigate('/contrats')} style={{ cursor: 'pointer' }}>
       {loading && <LoadingSpiner />}
       {!error && !loading && (
-        <Card
-          style={{
-            height: '180px',
-            border: '1px solid #023047',
-            boxShadow: '1px 0px 10px rgba(2, 5, 116, 0.32)',
-          }}
-          className='d-flex gap-3  flex-column justify-content-center align-items-center'
-        >
-          <i
-            className='  fas fa-receipt text-info'
-            style={{ fontSize: '50px' }}
-          ></i>
+        <Card className='rs-stat-card d-flex gap-3 flex-column justify-content-center align-items-center'>
+          <i className='fas fa-receipt text-info rs-stat-icon'></i>
 
           <h3 className='text-info'>{contrat?.length}</h3>
           <h5>Contrats</h5>

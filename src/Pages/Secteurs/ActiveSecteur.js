@@ -3,12 +3,12 @@ export default function ActiveSecteur() {
   const secteur = JSON.parse(selectedSecteur);
 
   return (
-    <div
-      className='mx-auto my-3 text-light bg-dark px-3 py-2 border-1 border-light rounded'
-      style={{ width: '270px' }}
-    >
-      <h5 className='text-light text-center'>
-        {secteur ? secteur.adresse : 'Aucun Secteur'}
+    <div className='rs-active-secteur-pill mx-auto my-3 px-4 py-3 text-center'>
+      <span className='rs-active-secteur-label d-block small text-uppercase mb-1'>
+        Secteur actif
+      </span>
+      <h5 className='text-white mb-0 fw-semibold'>
+        {secteur ? secteur.adresse : 'Aucun secteur sélectionné'}
       </h5>
     </div>
   );

@@ -31,7 +31,7 @@ const FormModal = ({
           <span aria-hidden='true'>&times;</span>
         </button>
       </div>
-      <div className='modal-body'>{bodyContent}</div>
+      <div className='modal-body rs-form-modal-body'>{bodyContent}</div>
     </Modal>
   );
 };
