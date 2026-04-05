@@ -17,6 +17,9 @@ import { createSelector } from 'reselect';
 import PrivateRoute from '../Auth/PrivateRoutes';
 import ConnectedUserRoute from '../Auth/ConnectedUserRoute';
 import Login from '../Pages/Authentication/Login';
+// import { createRequire } from 'module';
+
+// const require = createRequire(import.meta.url);
 
 const getLayout = (layoutType) => {
   let Layout = VerticalLayout;
@@ -105,4 +108,4 @@ const Index = () => {
   );
 };
 
-export default Index;
+export default Index; 
