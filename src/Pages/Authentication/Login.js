@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useContext, useState } from 'react';
 
 import {
   Row,
@@ -29,6 +29,7 @@ import {
   companyOwnerName,
   companyServices2,
 } from '../CompanyInfo/CompanyInfo';
+import { AuthContext } from '../../Auth/AuthContext';
 
 const Login = () => {
   document.title = `Connexion | ${companyName} `;
@@ -40,6 +41,7 @@ const Login = () => {
 
   // State de Navigation
   const navigate = useNavigate();
+  const { login: setAuthUser } = useContext(AuthContext);
 
   const [showPassword, setShowPassword] = useState(false);
 
@@ -76,18 +78,17 @@ const Login = () => {
 
           setTimeout(() => {
             try {
-              const authUser = localStorage.getItem('authUser');
-              const dataParse = JSON.parse(authUser);
+              const raw = localStorage.getItem('authUser');
+              const dataParse = raw ? JSON.parse(raw) : null;
               const role = dataParse?.user?.role;
 
               if (!role) {
                 return errorMessageAlert('Rôle utilisateur introuvable.');
               }
 
-              navigate('/initial_page');
-              window.location.reload();
-
-              // -----------------------
+              // Synchroniser le contexte (sinon PrivateRoute voit encore auth=null)
+              setAuthUser(dataParse);
+              navigate('/initial_page', { replace: true });
             } catch (err) {
               errorMessageAlert('Erreur de redirection.');
             }
