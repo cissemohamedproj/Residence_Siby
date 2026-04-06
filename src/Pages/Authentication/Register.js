@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Row,
   Col,
@@ -95,6 +95,11 @@ const Register = () => {
       });
     },
   });
+
+  useEffect(() => {
+    document.body.classList.add('rs-auth-body');
+    return () => document.body.classList.remove('rs-auth-body');
+  }, []);
 
   return (
     <div className='bg-login rs-auth-page'>

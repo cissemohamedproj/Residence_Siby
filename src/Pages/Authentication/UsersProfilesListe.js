@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useContext, useState } from 'react';
 import { Card, Container } from 'reactstrap';
 import { useGetAllUsers } from '../../Api/queriesAuth';
 import { useNavigate } from 'react-router-dom';
@@ -6,10 +6,12 @@ import LoadingSpiner from '../components/LoadingSpiner';
 import FormModal from '../components/FormModal';
 import UpdateUserProfile from './UpdateUserProfile';
 import { BackButton } from '../components/NavigationButton';
-import { connectedUserRole } from './userInfos';
+import { AuthContext } from '../../Auth/AuthContext';
 
 export default function UsersProfilesListe() {
   document.title = 'Liste des Profiles';
+  const { auth } = useContext(AuthContext);
+  const connectedUserRole = auth?.user?.role ?? null;
   const {
     data: userProfileData,
     isLoading: loadingProfile,

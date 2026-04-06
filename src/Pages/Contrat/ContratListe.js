@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useContext, useState } from 'react';
 import {
   Button,
   Card,
@@ -39,7 +39,7 @@ import {
 } from '../components/NavigationButton';
 import ActiveSecteur from '../Secteurs/ActiveSecteur';
 import Swal from 'sweetalert2';
-import { connectedUserRole } from '../Authentication/userInfos';
+import { AuthContext } from '../../Auth/AuthContext';
 export default function ContratListe() {
   const [form_modal, setForm_modal] = useState(false);
   const { data: contratData, isLoading, error } = useAllContrat();
@@ -51,6 +51,8 @@ export default function ContratListe() {
   const [formModalTitle, setFormModalTitle] = useState('Nouveau Contrat');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
+  const { auth } = useContext(AuthContext);
+  const connectedUserRole = auth?.user?.role ?? null;
   // State de Rechercher
   const [searchTerm, setSearchTerm] = useState('');
 

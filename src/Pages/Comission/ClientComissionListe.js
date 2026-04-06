@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useContext, useState } from 'react';
 import { Button, Card, CardBody, Col, Container, Row } from 'reactstrap';
 import LoadingSpiner from '../components/LoadingSpiner';
 import {
@@ -7,7 +7,7 @@ import {
   formatPrice,
 } from '../components/capitalizeFunction';
 import FormModal from '../components/FormModal';
-import { connectedUserRole } from '../Authentication/userInfos';
+import { AuthContext } from '../../Auth/AuthContext';
 import {
   useAllComissions,
   useDeleteComission,
@@ -19,6 +19,8 @@ import ReçuComission from './ReçuComission';
 
 export default function ClientComissionListe() {
   const param = useParams();
+  const { auth } = useContext(AuthContext);
+  const connectedUserRole = auth?.user?.role ?? null;
   const { data: comissionsData, isLoading, error } = useAllComissions();
   const { mutate: deleteComission, isLoading: isDeletting } =
     useDeleteComission();

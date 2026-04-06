@@ -36,6 +36,11 @@ body {
   color: var(--rs-ink);
 }
 
+/* Auth: fond du BODY (login/register) */
+body.rs-auth-body {
+  background: linear-gradient(135deg, #050814 0%, #0b1f2a 35%, #0f3b34 100%) !important;
+}
+
 h1,
 h2,
 h3,
@@ -160,6 +165,11 @@ h6,
   ) !important;
 }
 
+/* Fond secteur (plein écran) */
+.page-content.bg-primary {
+  min-height: 100vh;
+}
+
 .page-content .card {
   border-radius: var(--rs-radius);
   border: 1px solid var(--rs-border);
@@ -220,7 +230,9 @@ h6,
   border: none !important;
   box-shadow: var(--rs-shadow-md) !important;
   overflow: hidden;
-  background: var(--rs-surface) !important;
+  /* Carte claire (comme avant) — le fond sombre est sur body.rs-auth-body */
+  background: linear-gradient(180deg, #f0fdfa 0%, #ffffff 65%) !important;
+  color: var(--rs-ink) !important;
 }
 
 .rs-auth-card .card-body {

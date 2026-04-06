@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useContext, useState } from 'react';
 import { Card, CardBody, Col, Container, Row } from 'reactstrap';
 import LoadingSpiner from '../components/LoadingSpiner';
 import {
@@ -9,7 +9,7 @@ import {
 import { useAllPaiements } from '../../Api/queriesPaiement';
 import ReçuPaiement from '../Paiements/ReçuPaiement';
 import { useParams } from 'react-router-dom';
-import { connectedUserRole } from '../Authentication/userInfos';
+import { AuthContext } from '../../Auth/AuthContext';
 
 export default function ContratPaiements() {
   const param = useParams();
@@ -17,6 +17,8 @@ export default function ContratPaiements() {
   const [selectedPaiement, setSelectedPaiement] = useState(false);
   const [selectedPaiementTotalPaye, setSelectedPaiementTotalPaye] = useState(0);
   const [show_modal, setShow_modal] = useState(false);
+  const { auth } = useContext(AuthContext);
+  const connectedUserRole = auth?.user?.role ?? null;
 
   const filterPaiement = paiementsData?.filter(
     (value) => value?.contrat?.appartement?.secteur?._id === param.id

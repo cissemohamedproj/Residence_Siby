@@ -8,14 +8,14 @@ import {
 } from 'reactstrap';
 
 import { AuthContext } from '../../../Auth/AuthContext';
-import { connectedUserName } from '../../../Pages/Authentication/userInfos';
 import {  useNavigate } from 'react-router-dom';
 
 const ProfileMenu = (props) => {
   // Declare a new state variable, which we'll call "menu"
   const [menu, setMenu] = useState(false);
   const navigate = useNavigate();
-  const { logout } = useContext(AuthContext);
+  const { auth, logout } = useContext(AuthContext);
+  const connectedUserName = auth?.user?.name || '';
   // const handleLogout = logout();
 
   return (
@@ -31,7 +31,7 @@ const ProfileMenu = (props) => {
           tag='button'
         >
           <span className='fw-bold font-size-11 text-warning d-inline-block ms-2 me-2'>
-            {connectedUserName?.toUpperCase()}
+            {(connectedUserName || 'Utilisateur')?.toUpperCase()}
           </span>
           <i className='mdi mdi-chevron-down d-xl-inline-block' />
         </DropdownToggle>

@@ -21,10 +21,10 @@ import { capitalizeWords, formatPrice } from '../components/capitalizeFunction';
 import { deleteButton } from '../components/AlerteModal';
 import { useNavigate } from 'react-router-dom';
 import { useAllAppartement } from '../../Api/queriesAppartement';
-import { connectedUserRole } from '../Authentication/userInfos';
 
 export default function Secteur() {
-  const { logout } = useContext(AuthContext);
+  const { auth, logout } = useContext(AuthContext);
+  const connectedUserRole = auth?.user?.role ?? null;
   const [form_modal, setForm_modal] = useState(false);
   const [secteurToUpdate, setSecteurToUpdate] = useState(null);
   const [formModalTitle, setFormModalTitle] = useState('Nouveau Secteur');

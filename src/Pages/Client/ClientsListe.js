@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useContext, useState } from 'react';
 import { Button, Card, CardBody, Col, Container, Row } from 'reactstrap';
 import Breadcrumbs from '../../components/Common/Breadcrumb';
 import FormModal from '../components/FormModal';
@@ -19,9 +19,11 @@ import {
   HomeButton,
 } from '../components/NavigationButton';
 import ActiveSecteur from '../Secteurs/ActiveSecteur';
-import { connectedUserRole } from '../Authentication/userInfos';
+import { AuthContext } from '../../Auth/AuthContext';
 
 export default function ClientListe() {
+  const { auth } = useContext(AuthContext);
+  const connectedUserRole = auth?.user?.role ?? null;
   const [form_modal, setForm_modal] = useState(false);
   const { data: clientData, isLoading, error } = useAllClient();
   const { mutate: deleteClient, isLoading: isDeleting } = useDeleteClient();

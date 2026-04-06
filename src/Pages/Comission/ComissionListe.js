@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useContext, useState } from 'react';
 import { Card, CardBody, Col, Container, Row } from 'reactstrap';
 import LoadingSpiner from '../components/LoadingSpiner';
 import {
@@ -6,7 +6,7 @@ import {
   formatPhoneNumber,
   formatPrice,
 } from '../components/capitalizeFunction';
-import { connectedUserRole } from '../Authentication/userInfos';
+import { AuthContext } from '../../Auth/AuthContext';
 import {
   useAllComissions,
   useDeleteComission,
@@ -15,6 +15,8 @@ import ReçuComission from './ReçuComission';
 import { deleteButton } from '../components/AlerteModal';
 
 export default function ComissionListe() {
+  const { auth } = useContext(AuthContext);
+  const connectedUserRole = auth?.user?.role ?? null;
   const { data: comissionsData, isLoading, error } = useAllComissions();
   const { mutate: deleteComission, isLoading: isDeletting } =
     useDeleteComission();

@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import withRouter from '../../components/Common/withRouter';
 
@@ -22,11 +22,13 @@ import {
 } from '../../store/actions';
 
 import { createSelector } from 'reselect';
-import { connectedUserRole } from '../../Pages/Authentication/userInfos';
 import SidebarUsers from './SidebarUsers';
+import { AuthContext } from '../../Auth/AuthContext';
 
 const Layout = (props) => {
   const dispatch = useDispatch();
+  const { auth } = useContext(AuthContext);
+  const connectedUserRole = auth?.user?.role ?? null;
 
   const selectLayoutState = (state) => state.Layout;
   const selectLayoutProperties = createSelector(
@@ -123,11 +125,15 @@ const Layout = (props) => {
         {/* ----------------------------------------------------- */}
         {/* ---------- Dinamyque SIDBAR Content------------------------------------ */}
 
-        <Sidebar
-          theme={leftSideBarTheme}
-          type={leftSideBarType}
-          isMobile={isMobile}
-        />
+        {connectedUserRole === 'admin' ? (
+          <Sidebar
+            theme={leftSideBarTheme}
+            type={leftSideBarType}
+            isMobile={isMobile}
+          />
+        ) : (
+          <SidebarUsers />
+        )}
 
         {/* ----------------------------------------------------- */}
 

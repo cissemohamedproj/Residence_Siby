@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useContext, useState } from 'react';
 import {
   Button,
   Card,
@@ -37,7 +37,7 @@ import {
   useUpdateRentalStatut,
 } from '../../Api/queriesReservation';
 import ReservationForm from './ReservationForm';
-import { connectedUserRole } from '../Authentication/userInfos';
+import { AuthContext } from '../../Auth/AuthContext';
 import Swal from 'sweetalert2';
 import ReçuReservation from './ReçuReservation';
 export default function ReservationListe() {
@@ -47,6 +47,8 @@ export default function ReservationListe() {
   const { data: rentalsData, isLoading, error } = useAllRental();
   const { mutate: updateRentalStatut } = useUpdateRentalStatut();
   const { mutate: deleteRental, isLoading: isDeleting } = useDeleteRental();
+  const { auth } = useContext(AuthContext);
+  const connectedUserRole = auth?.user?.role ?? null;
 
   const [selectedRental, setSelectedRental] = useState(null);
   const [rentalToUpdate, setRentalToUpdate] = useState(null);

@@ -91,8 +91,30 @@
   font-size: 0.75rem;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: rgba(248, 250, 252, 0.45);
+  color: rgba(248, 250, 252, 0.78);
   margin: 0;
+}
+
+.initial-page__loading {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.initial-page__spinner {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 2px solid rgba(248, 250, 252, 0.22);
+  border-top-color: rgba(248, 250, 252, 0.95);
+  animation: initial-spin 0.8s linear infinite;
+}
+
+@keyframes initial-spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

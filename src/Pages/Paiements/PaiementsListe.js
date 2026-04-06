@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useContext, useState } from 'react';
 import { Card, CardBody, Col, Container, Row } from 'reactstrap';
 import Breadcrumbs from '../../components/Common/Breadcrumb';
 import LoadingSpiner from '../components/LoadingSpiner';
@@ -17,10 +17,12 @@ import {
 import { useAllContrat } from '../../Api/queriesContrat';
 import FormModal from '../components/FormModal';
 import PaiementForm from './PaiementForm';
-import { connectedUserRole } from '../Authentication/userInfos';
 import { useAllRental } from '../../Api/queriesReservation';
+import { AuthContext } from '../../Auth/AuthContext';
 
 export default function PaiementsListe() {
+  const { auth } = useContext(AuthContext);
+  const connectedUserRole = auth?.user?.role ?? null;
   const { data: paiementsData, isLoading, error } = useAllPaiements();
   const { data: contrats } = useAllContrat();
   const { data: rentals } = useAllRental();
