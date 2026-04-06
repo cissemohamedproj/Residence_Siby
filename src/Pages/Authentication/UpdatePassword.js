@@ -19,14 +19,14 @@ import {
   errorMessageAlert,
 } from '../components/AlerteModal';
 import { useUpdatePassword } from '../../Api/queriesAuth';
-import { connectedUserId } from './userInfos';
 import LoadingSpiner from '../components/LoadingSpiner';
 import { AuthContext } from '../../Auth/AuthContext';
 
 const UpdatePassword = () => {
   // Query to update password
   const { mutate: updatePassword } = useUpdatePassword();
-  const { logout } = useContext(AuthContext);
+  const { auth, logout } = useContext(AuthContext);
+  const connectedUserId = auth?.user?.id ?? null;
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -60,6 +60,11 @@ const UpdatePassword = () => {
       setIsLoading(true);
       // Reset loading state after submission
       try {
+        if (!connectedUserId) {
+          errorMessageAlert('Session introuvable. Veuillez vous reconnecter.');
+          setIsLoading(false);
+          return;
+        }
         updatePassword(
           { id: connectedUserId, data: values },
           {

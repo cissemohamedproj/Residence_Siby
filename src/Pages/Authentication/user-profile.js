@@ -13,11 +13,6 @@ import withRouter from '../../components/Common/withRouter';
 
 import Breadcrumb from '../../components/Common/Breadcrumb';
 
-import {
-  connectedUserEmail,
-  connectedUserName,
-  connectedUserRole,
-} from './userInfos';
 import { AuthContext } from '../../Auth/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { companyName } from '../CompanyInfo/CompanyInfo';
@@ -34,7 +29,13 @@ const UserProfile = () => {
   document.title = `Mon profil | ${companyName}`;
 
   const navigate = useNavigate();
-  const { logout } = useContext(AuthContext);
+  const { auth, logout } = useContext(AuthContext);
+
+  // Source unique de vérité en prod: AuthContext (réhydraté depuis localStorage)
+  const user = auth?.user ?? null;
+  const connectedUserName = user?.name ?? '';
+  const connectedUserEmail = user?.email ?? '';
+  const connectedUserRole = user?.role ?? null;
 
   const initials = useMemo(
     () => profileInitials(connectedUserName),

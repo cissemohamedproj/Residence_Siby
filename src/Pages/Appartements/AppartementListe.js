@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useContext, useState } from 'react';
 import { Button, Card, CardBody, Col, Container, Row } from 'reactstrap';
 import Breadcrumbs from '../../components/Common/Breadcrumb';
 import { useParams } from 'react-router-dom';
@@ -17,10 +17,12 @@ import {
 import FormModal from '../components/FormModal';
 import AppartementForm from './AppartementForm';
 import { useOneSecteur } from '../../Api/queriesSecteurs';
-import { connectedUserRole } from '../Authentication/userInfos';
+import { AuthContext } from '../../Auth/AuthContext';
 
 export default function AppartementListe() {
   const secteur = useParams();
+  const { auth } = useContext(AuthContext);
+  const connectedUserRole = auth?.user?.role ?? null;
   // Recuperer la Liste des Appartement
   const { data: appartementData, isLoading, error } = useAllAppartement();
   const {

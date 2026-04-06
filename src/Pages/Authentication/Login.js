@@ -1,4 +1,4 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 
 import {
   Row,
@@ -105,6 +105,11 @@ const Login = () => {
       });
     },
   });
+
+  useEffect(() => {
+    document.body.classList.add('rs-auth-body');
+    return () => document.body.classList.remove('rs-auth-body');
+  }, []);
 
   return (
     <React.Fragment>

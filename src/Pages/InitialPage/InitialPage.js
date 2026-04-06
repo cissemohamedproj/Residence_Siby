@@ -84,7 +84,12 @@ const InitialPage = () => {
                 style={{ width: `${progress}%` }}
               />
             </div>
-            <p className='initial-page__hint'>Chargement de l&apos;application…</p>
+            <div className='initial-page__loading'>
+              <span className='initial-page__spinner' aria-hidden />
+              <p className='initial-page__hint mb-0'>
+                Chargement de l&apos;application…
+              </p>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>

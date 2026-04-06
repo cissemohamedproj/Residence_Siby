@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useContext, useState } from 'react';
 import { Button, Card, CardBody, Col, Container, Row } from 'reactstrap';
 import Breadcrumbs from '../../components/Common/Breadcrumb';
 import FormModal from '../components/FormModal';
@@ -10,11 +10,11 @@ import {
 } from '../components/capitalizeFunction';
 import { deleteButton } from '../components/AlerteModal';
 import { useAllPaiements, useDeletePaiement } from '../../Api/queriesPaiement';
-import { connectedUserRole } from '../Authentication/userInfos';
 import { useParams } from 'react-router-dom';
 import PaiementForm from '../Paiements/PaiementForm';
 import { useOneContrat } from '../../Api/queriesContrat';
 import ReçuPaiement from '../Paiements/ReçuPaiement';
+import { AuthContext } from '../../Auth/AuthContext';
 import {
   BackButton,
   DashboardButton,
@@ -23,6 +23,8 @@ import {
 
 export default function PaiementsContrat() {
   const contrat = useParams();
+  const { auth } = useContext(AuthContext);
+  const connectedUserRole = auth?.user?.role ?? null;
   const [form_modal, setForm_modal] = useState(false);
   const { data: paiementsData, isLoading, error } = useAllPaiements();
   const { mutate: deletePaiement, isDeleting } = useDeletePaiement();

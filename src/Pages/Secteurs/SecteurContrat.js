@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useContext, useState } from 'react';
 import { Button, Card, CardBody, Col, Row } from 'reactstrap';
 import LoadingSpiner from '../components/LoadingSpiner';
 import {
@@ -9,12 +9,14 @@ import {
 import DureeSejourDisplay from '../components/DureeSejourDisplay';
 import { useAllContrat } from '../../Api/queriesContrat';
 import { useNavigate, useParams } from 'react-router-dom';
-import { connectedUserRole } from '../Authentication/userInfos';
+import { AuthContext } from '../../Auth/AuthContext';
 export default function SecteurContrat() {
   const param = useParams();
   const { data: contratData, isLoading, error } = useAllContrat();
 
   const navigate = useNavigate();
+  const { auth } = useContext(AuthContext);
+  const connectedUserRole = auth?.user?.role ?? null;
   // State de Rechercher
   const [searchTerm, setSearchTerm] = useState('');
 
