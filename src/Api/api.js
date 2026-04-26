@@ -2,7 +2,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: 'https://backend-residence-siby.onrender.com/api',
+  baseURL: 'https://backend-residence-siby-0dg3.onrender.com/api',
   // baseURL: 'http://localhost:5000/api',
 
   headers: {
