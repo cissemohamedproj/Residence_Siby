@@ -20,6 +20,20 @@ export const useAllRental = () =>
   });
 
 // ------------------------------------------------------------
+// OPTIMISATION (dashboard reservations): pagination + recherche (server-side)
+// ------------------------------------------------------------
+export const useRentalsPaged = ({ page = 1, limit = 20, search = '' }) =>
+  useQuery({
+    queryKey: ['rentals', 'paged', { page, limit, search }],
+    queryFn: () =>
+      api
+        .get('/rentals/paged', { params: { page, limit, search } })
+        .then((res) => res.data),
+    keepPreviousData: true,
+    staleTime: 1000 * 30,
+  });
+
+// ------------------------------------------------------------
 // OPTIMISATION (/secteur/:id): rentals filtrés par secteur
 // ------------------------------------------------------------
 // Objectif: éviter de charger toutes les réservations puis filtrer côté front.

@@ -7,25 +7,26 @@ import {
   formatPrice,
 } from '../components/capitalizeFunction';
 import DureeSejourDisplay from '../components/DureeSejourDisplay';
-import { useAllRental } from '../../Api/queriesReservation';
+import { useRentalsPaged } from '../../Api/queriesReservation';
+import PaginationControls from '../components/PaginationControls';
 export default function AllReservationListe() {
-  const { data: rentalsData, isLoading, error } = useAllRental();
+  // ------------------------------------------------------------
+  // OPTIMISATION (dashboard): pagination + recherche (server-side)
+  // ------------------------------------------------------------
+  const [page, setPage] = useState(1);
+  const limit = 20;
 
   // State de Rechercher
   const [searchTerm, setSearchTerm] = useState('');
 
-  // Fonction pour filtrer les clients en fonction du terme de recherche
-  const filteredRental = rentalsData?.filter((item) => {
-    const search = searchTerm.toLowerCase();
-    return (
-      `${item?.client?.firstName} ${item?.client?.lastName}`
-        .toLowerCase()
-        .includes(search) ||
-      item?.client?.phoneNumber.toString().includes(search) ||
-      item?.appartement?.secteur.adresse?.toString().includes(search) ||
-      new Date(item?.rentalDate)?.toLocaleDateString().includes(search)
-    );
+  const { data: paged, isLoading, error } = useRentalsPaged({
+    page,
+    limit,
+    search: searchTerm,
   });
+
+  // On garde `filteredRental` pour ne pas changer la logique d'affichage.
+  const filteredRental = paged?.items || [];
 
   return (
     <Row>
@@ -40,7 +41,7 @@ export default function AllReservationListe() {
                     Nombre:{' '}
                     <span className='badge bg-warning'>
                       {' '}
-                      {filteredRental?.length}{' '}
+                      {paged?.total ?? filteredRental?.length ?? 0}{' '}
                     </span>
                   </p>
                 </Col>
@@ -57,7 +58,11 @@ export default function AllReservationListe() {
                         className='form-control search border border-dark rounded'
                         placeholder='Rechercher...'
                         value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
+                          onChange={(e) => {
+                            // OPTIMISATION UX: recherche => retour page 1 (sans reload)
+                            setSearchTerm(e.target.value);
+                            setPage(1);
+                          }}
                       />
                     </div>
                   </div>
@@ -69,6 +74,14 @@ export default function AllReservationListe() {
                 </div>
               )}
               {isLoading && <LoadingSpiner />}
+
+              {/* OPTIMISATION UX: pagination en haut (visible + contrastée) */}
+              <PaginationControls
+                page={paged?.page}
+                totalPages={paged?.totalPages}
+                onPageChange={(p) => setPage(p)}
+                wrapperClassName='mb-3 mt-2'
+              />
 
               <div
                 className='table-responsive table-card rs-table-scroll mt-3'
