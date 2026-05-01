@@ -19,6 +19,11 @@ router.get('/getAllClients', clientController.getAllClients);
 // ------------------------------------------------------------
 router.get('/count', clientController.getClientCount);
 
+// ------------------------------------------------------------
+// OPTIMISATION (clients liste): pagination + recherche (server-side)
+// ------------------------------------------------------------
+router.get('/paged', clientController.getClientsPaged);
+
 // Afficher un seul Client
 router.get('/getClient/:id', clientController.getClient);
 

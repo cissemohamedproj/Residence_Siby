@@ -184,6 +184,76 @@ exports.getAppartementCount = async (req, res) => {
   }
 };
 
+// ------------------------------------------------------------
+// OPTIMISATION (appartements liste): pagination + recherche (server-side)
+// ------------------------------------------------------------
+// Objectif: éviter getAllAppartements sur la page "Appartements".
+// Recherche: nom / numéro / adresse secteur (comme le front).
+exports.getAppartementsPaged = async (req, res) => {
+  try {
+    const page = Math.max(parseInt(req.query.page || '1', 10), 1);
+    const limit = Math.min(Math.max(parseInt(req.query.limit || '20', 10), 1), 200);
+    const searchRaw = String(req.query.search || '').trim();
+
+    // On utilise aggregation car la recherche inclut secteur.adresse (référence).
+    const pipeline = [
+      {
+        $lookup: {
+          from: 'secteurs',
+          localField: 'secteur',
+          foreignField: '_id',
+          as: 'secteurDoc',
+        },
+      },
+      { $unwind: { path: '$secteurDoc', preserveNullAndEmptyArrays: true } },
+    ];
+
+    if (searchRaw) {
+      pipeline.push({
+        $match: {
+          $or: [
+            { name: { $regex: searchRaw, $options: 'i' } },
+            // numéro: on compare aussi en string
+            {
+              $expr: {
+                $regexMatch: {
+                  input: { $toString: '$appartementNumber' },
+                  regex: searchRaw,
+                  options: 'i',
+                },
+              },
+            },
+            { 'secteurDoc.adresse': { $regex: searchRaw, $options: 'i' } },
+          ],
+        },
+      });
+    }
+
+    pipeline.push(
+      { $sort: { appartementNumber: 1 } },
+      // OPTIMISATION: on reconstruit une forme proche de populate('secteur')
+      // IMPORTANT: éviter $project mixant inclusion/exclusion (MongoDB le refuse).
+      { $addFields: { secteur: '$secteurDoc' } },
+      { $unset: 'secteurDoc' },
+      {
+        $facet: {
+          meta: [{ $count: 'total' }],
+          items: [{ $skip: (page - 1) * limit }, { $limit: limit }],
+        },
+      }
+    );
+
+    const result = await Appartement.aggregate(pipeline);
+    const total = result?.[0]?.meta?.[0]?.total || 0;
+    const items = result?.[0]?.items || [];
+    const totalPages = Math.max(Math.ceil(total / limit), 1);
+
+    return res.status(200).json({ items, total, page, limit, totalPages });
+  } catch (err) {
+    return res.status(400).json({ status: 'error', message: err.message });
+  }
+};
+
 // Supprimer un Produit
 exports.deleteAppartement = async (req, res) => {
   try {

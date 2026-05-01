@@ -31,6 +31,11 @@ router.get('/statsBySecteur', appartement.getAppartementStatsBySecteur);
 // ------------------------------------------------------------
 router.get('/count', appartement.getAppartementCount);
 
+// ------------------------------------------------------------
+// OPTIMISATION (appartements liste): pagination + recherche (server-side)
+// ------------------------------------------------------------
+router.get('/paged', appartement.getAppartementsPaged);
+
 
 
 // Afficher une seule Appartement

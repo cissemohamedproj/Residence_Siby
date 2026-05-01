@@ -130,6 +130,75 @@ exports.getClientCount = async (req, res) => {
   }
 };
 
+// ------------------------------------------------------------
+// OPTIMISATION (clients liste): pagination + recherche (server-side)
+// ------------------------------------------------------------
+// Objectif:
+// - éviter getAllClients (RAM) sur la page "Clients"
+// - supporter la recherche + pagination sans rechargement de page
+//
+// Contraintes:
+// - aucun changement de schéma
+// - conserver les mêmes données affichées côté front
+//
+// Réponse:
+// { items: Client[], total, page, limit, totalPages }
+// NB: on ajoute aussi `contractCount` par client (utilisé dans le badge "Contrat").
+exports.getClientsPaged = async (req, res) => {
+  try {
+    const page = Math.max(parseInt(req.query.page || '1', 10), 1);
+    const limit = Math.min(Math.max(parseInt(req.query.limit || '20', 10), 1), 200);
+    const searchRaw = String(req.query.search || '').trim();
+
+    // Recherche simple (nom/prénom/téléphone). On garde une logique proche du front.
+    const matchStage = searchRaw
+      ? {
+          $or: [
+            { firstName: { $regex: searchRaw, $options: 'i' } },
+            { lastName: { $regex: searchRaw, $options: 'i' } },
+            { phoneNumber: { $regex: searchRaw, $options: 'i' } },
+            { pieceNumber: { $regex: searchRaw, $options: 'i' } },
+          ],
+        }
+      : {};
+
+    const pipeline = [
+      { $match: matchStage },
+      { $sort: { createdAt: -1 } },
+      // Join contrats pour calculer le nombre de contrats par client (badge)
+      {
+        $lookup: {
+          from: 'contrats',
+          localField: '_id',
+          foreignField: 'client',
+          as: 'contrats',
+        },
+      },
+      {
+        $addFields: {
+          contractCount: { $size: '$contrats' },
+        },
+      },
+      { $project: { contrats: 0 } },
+      {
+        $facet: {
+          meta: [{ $count: 'total' }],
+          items: [{ $skip: (page - 1) * limit }, { $limit: limit }],
+        },
+      },
+    ];
+
+    const result = await Client.aggregate(pipeline);
+    const total = result?.[0]?.meta?.[0]?.total || 0;
+    const items = result?.[0]?.items || [];
+    const totalPages = Math.max(Math.ceil(total / limit), 1);
+
+    return res.status(200).json({ items, total, page, limit, totalPages });
+  } catch (error) {
+    return res.status(404).json({ message: error?.message || error });
+  }
+};
+
 // Récupérer un Client par ID
 exports.getClient = async (req, res) => {
   try {

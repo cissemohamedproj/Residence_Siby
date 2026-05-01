@@ -38,6 +38,11 @@ router.get('/count', contratController.getContratCount);
 // ------------------------------------------------------------
 router.get('/active', contratController.getActiveContrats);
 
+// ------------------------------------------------------------
+// OPTIMISATION (contrats liste): pagination + recherche (server-side)
+// ------------------------------------------------------------
+router.get('/paged', contratController.getContratsPaged);
+
 // Afficher un seul Contrat
 router.get('/getContrat/:id', contratController.getContrat);
 
