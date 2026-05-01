@@ -7,12 +7,13 @@ import {
   formatPrice,
 } from '../components/capitalizeFunction';
 import DureeSejourDisplay from '../components/DureeSejourDisplay';
-import { useAllContrat } from '../../Api/queriesContrat';
+import { useContratsBySecteur } from '../../Api/queriesContrat';
 import { useNavigate, useParams } from 'react-router-dom';
 import { AuthContext } from '../../Auth/AuthContext';
 export default function SecteurContrat() {
   const param = useParams();
-  const { data: contratData, isLoading, error } = useAllContrat();
+  // OPTIMISATION: on charge uniquement les contrats du secteur sélectionné.
+  const { data: contratData, isLoading, error } = useContratsBySecteur(param?.id);
 
   const navigate = useNavigate();
   const { auth } = useContext(AuthContext);
@@ -24,7 +25,8 @@ export default function SecteurContrat() {
   const filteredContrat = contratData?.filter((contrat) => {
     const search = searchTerm.toLowerCase();
     return (
-      contrat?.appartement?.secteur?._id === param?.id &&
+      // OPTIMISATION: les contrats sont déjà filtrés par secteur côté backend.
+      // On conserve la logique de recherche exactement identique.
       (`${contrat?.client?.firstName} ${contrat?.client?.lastName}`
         .toLowerCase()
         .includes(search) ||
@@ -78,7 +80,10 @@ export default function SecteurContrat() {
               )}
               {isLoading && <LoadingSpiner />}
 
-              <div className='table-responsive table-card rs-table-scroll mt-3 mb-1' style={{minHeight: '300px', maxHeight: '300px',  width: '100%'}}>
+              {/* OPTIMISATION UX: pas de maxHeight/minHeight forcés pour éviter
+                  le scroll vertical interne. Le tableau prend la hauteur
+                  de son contenu, la page scroll naturellement. */}
+              <div className='table-responsive table-card rs-table-scroll mt-3 mb-1' style={{ width: '100%' }}>
                 {!filteredContrat?.length && !isLoading && !error && (
                   <div className='text-center text-mutate'>
                     Aucun Contrat Enregistré !

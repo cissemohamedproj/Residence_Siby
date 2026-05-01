@@ -27,6 +27,19 @@ export const useAllPaiements = () =>
       api.get('/paiements/getAllPaiements').then((res) => res.data),
   });
 
+// ------------------------------------------------------------
+// OPTIMISATION (/secteur/:id): paiements filtrés par secteur
+// ------------------------------------------------------------
+// Objectif: éviter de charger tous les paiements puis filtrer côté front.
+export const usePaiementsBySecteur = (secteurId) =>
+  useQuery({
+    queryKey: ['paiements', 'bySecteur', secteurId],
+    queryFn: () =>
+      api.get(`/paiements/bySecteur/${secteurId}`).then((res) => res.data),
+    enabled: Boolean(secteurId),
+    staleTime: 1000 * 60 * 2,
+  });
+
 // Obtenir une Paiement
 export const useOnePaiement = (id) =>
   useQuery({

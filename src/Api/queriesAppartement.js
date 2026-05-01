@@ -41,6 +41,19 @@ export const useAppartementStatsBySecteur = () =>
     staleTime: 1000 * 60 * 2, // cache court: les compteurs changent souvent
   });
 
+// ------------------------------------------------------------
+// OPTIMISATION (/secteur/:id): appartements filtrés par secteur
+// ------------------------------------------------------------
+// Objectif: éviter de charger tous les appartements puis filtrer côté front.
+export const useAppartementsBySecteur = (secteurId) =>
+  useQuery({
+    queryKey: ['appartements', 'bySecteur', secteurId],
+    queryFn: () =>
+      api.get(`/appartements/bySecteur/${secteurId}`).then((res) => res.data),
+    enabled: Boolean(secteurId),
+    staleTime: 1000 * 60 * 2,
+  });
+
 // Obtenir une Appartement
 export const useOneAppartement = (id) =>
   useQuery({

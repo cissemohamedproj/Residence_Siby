@@ -39,6 +39,19 @@ export const useAllContrat = () =>
     staleTime: 1000 * 60 * 5, //chaque 5 minutes rafraichir les données
   });
 
+// ------------------------------------------------------------
+// OPTIMISATION (/secteur/:id): contrats filtrés par secteur
+// ------------------------------------------------------------
+// Objectif: éviter de charger tous les contrats puis filtrer côté front.
+export const useContratsBySecteur = (secteurId) =>
+  useQuery({
+    queryKey: ['contrats', 'bySecteur', secteurId],
+    queryFn: () =>
+      api.get(`/contrats/bySecteur/${secteurId}`).then((res) => res.data),
+    enabled: Boolean(secteurId),
+    staleTime: 1000 * 60 * 2,
+  });
+
 // Obtenir une contrats
 export const useOneContrat = (id) =>
   useQuery({

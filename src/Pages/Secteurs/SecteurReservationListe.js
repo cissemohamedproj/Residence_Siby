@@ -7,11 +7,12 @@ import {
   formatPrice,
 } from '../components/capitalizeFunction';
 import DureeSejourDisplay from '../components/DureeSejourDisplay';
-import { useAllRental } from '../../Api/queriesReservation';
+import { useRentalsBySecteur } from '../../Api/queriesReservation';
 import { useParams } from 'react-router-dom';
 export default function SecteurReservationListe() {
   const param = useParams();
-  const { data: rentalsData, isLoading, error } = useAllRental();
+  // OPTIMISATION: on charge uniquement les réservations du secteur sélectionné.
+  const { data: rentalsData, isLoading, error } = useRentalsBySecteur(param?.id);
 
   // State de Rechercher
   const [searchTerm, setSearchTerm] = useState('');
@@ -20,7 +21,8 @@ export default function SecteurReservationListe() {
   const filteredRental = rentalsData?.filter((item) => {
     const search = searchTerm.toLowerCase();
     return (
-      item?.appartement?.secteur?._id === param.id &&
+      // OPTIMISATION: les réservations sont déjà filtrées par secteur côté backend.
+      // On conserve la logique de recherche exactement identique.
       (`${item?.client?.firstName} ${item?.client?.lastName}`
         .toLowerCase()
         .includes(search) ||
@@ -75,7 +77,9 @@ export default function SecteurReservationListe() {
 
               <div
                 className='table-responsive table-card rs-table-scroll mt-3'
-                style={{ minHeight: 350 }}
+                // OPTIMISATION UX: suppression de la hauteur minimale forcée
+                // pour éviter l'overflow/scroll imbriqué sur secteur/:id.
+                style={{}}
               >
                 {!filteredRental?.length && !isLoading && !error && (
                   <div className='text-center text-mutate'>

@@ -11,7 +11,7 @@ import {
 import { deleteButton } from '../components/AlerteModal';
 
 import {
-  useAllAppartement,
+  useAppartementsBySecteur,
   useDeleteAppartement,
 } from '../../Api/queriesAppartement';
 import FormModal from '../components/FormModal';
@@ -24,7 +24,12 @@ export default function AppartementListe() {
   const { auth } = useContext(AuthContext);
   const connectedUserRole = auth?.user?.role ?? null;
   // Recuperer la Liste des Appartement
-  const { data: appartementData, isLoading, error } = useAllAppartement();
+  // OPTIMISATION: on charge uniquement les appartements du secteur sélectionné.
+  const {
+    data: appartementData,
+    isLoading,
+    error,
+  } = useAppartementsBySecteur(secteur.id);
   const {
     data: selectedSecteurData,
     isLoading: secteurLoading,
@@ -46,9 +51,9 @@ export default function AppartementListe() {
 
   // Fonction pour la recherche
 
-  const filterAppartement = appartementData?.filter((item) => {
-    return item?.secteur?._id === secteur.id;
-  });
+  // OPTIMISATION: les données sont déjà filtrées côté backend.
+  // On garde la variable pour conserver la logique d'affichage inchangée.
+  const filterAppartement = appartementData;
 
   return (
     <React.Fragment>
@@ -121,7 +126,9 @@ export default function AppartementListe() {
 
                     <div
                       className='table-responsive table-card rs-table-scroll mt-3 mb-1'
-                      style={{ minHeight: '350px' }}
+                      // OPTIMISATION UX: suppression de la hauteur minimale forcée
+                      // pour éviter l'overflow/scroll imbriqué sur secteur/:id.
+                      style={{}}
                     >
                       {!filterAppartement?.length && !isLoading && !error && (
                         <div className='text-center text-mutate'>

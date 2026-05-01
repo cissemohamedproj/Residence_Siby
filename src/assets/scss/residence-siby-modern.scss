@@ -571,13 +571,18 @@ h6,
 
 @media (min-width: 768px) {
   .rs-selected-layout .rs-section-panel--scroll {
-    max-height: min(70vh, 680px);
-    overflow-y: auto;
+    // OPTIMISATION UX (secteur/:id):
+    // - Supprime le "scroll dans le scroll" (overflow vertical imbriqué)
+    // - Laisse chaque section prendre la hauteur de son contenu
+    // - Aucune donnée n'est masquée: la page scroll naturellement
+    max-height: none;
+    overflow-y: visible;
   }
 
   .rs-selected-layout .rs-section-panel--short {
-    max-height: min(55vh, 480px);
-    overflow-y: auto;
+    // OPTIMISATION UX (secteur/:id): même logique que ci-dessus.
+    max-height: none;
+    overflow-y: visible;
   }
 }
 
@@ -643,8 +648,12 @@ button.rs-nav-btn {
 
 // ——— Structure des données (tables métier) ———
 .table-responsive.table-card.rs-table-scroll {
-  max-height: min(75vh, 720px);
-  overflow: auto;
+  // OPTIMISATION UX (secteur/:id):
+  // - Évite le scroll vertical interne (source d'overflow)
+  // - Conserve le scroll horizontal si le tableau est large
+  max-height: none;
+  overflow-x: auto;
+  overflow-y: visible;
 }
 
 .rs-data-table {

@@ -6,23 +6,31 @@ import {
   formatPhoneNumber,
   formatPrice,
 } from '../components/capitalizeFunction';
-import { useAllPaiements } from '../../Api/queriesPaiement';
+import { usePaiementsBySecteur } from '../../Api/queriesPaiement';
 import ReçuPaiement from '../Paiements/ReçuPaiement';
 import { useParams } from 'react-router-dom';
 import { AuthContext } from '../../Auth/AuthContext';
 
 export default function ContratPaiements() {
   const param = useParams();
-  const { data: paiementsData, isLoading, error } = useAllPaiements();
+  // OPTIMISATION: on charge uniquement les paiements du secteur sélectionné.
+  const { data: paiementsData, isLoading, error } = usePaiementsBySecteur(param?.id);
   const [selectedPaiement, setSelectedPaiement] = useState(false);
   const [selectedPaiementTotalPaye, setSelectedPaiementTotalPaye] = useState(0);
   const [show_modal, setShow_modal] = useState(false);
   const { auth } = useContext(AuthContext);
   const connectedUserRole = auth?.user?.role ?? null;
 
-  const filterPaiement = paiementsData?.filter(
-    (value) => value?.contrat?.appartement?.secteur?._id === param.id
-  );
+  // OPTIMISATION: l'endpoint `paiements/bySecteur/:id` peut renvoyer des paiements
+  // liés à des CONTRATS et/ou à des RESERVATIONS (rental).
+  //
+  // IMPORTANT: cette page "ContratPaiements" exploite uniquement `paiement.contrat.*`
+  // (client, téléphone, montants). Si `contrat` est null (paiement de reservation),
+  // certaines cellules restent vides.
+  //
+  // Pour ne PAS changer la logique existante, on garde le même comportement qu'avant
+  // l'optimisation: on n'affiche ici que les paiements ayant un `contrat`.
+  const filterPaiement = (paiementsData || []).filter((p) => Boolean(p?.contrat));
 
   // Total de commandes
   const sumTotalAmount = filterPaiement?.reduce((curr, item) => {
@@ -87,6 +95,8 @@ export default function ContratPaiements() {
                     )}
                     {isLoading && <LoadingSpiner />}
 
+                    {/* OPTIMISATION UX: pas de hauteur forcée -> pas de scroll interne.
+                        Le tableau prend la hauteur de son contenu, la page scroll. */}
                     <div className='table-responsive table-card rs-table-scroll mt-3 mb-1'>
                       {filterPaiement?.length === 0 && (
                         <div className='text-center text-mutate'>

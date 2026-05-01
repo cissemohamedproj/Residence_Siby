@@ -23,7 +23,10 @@ export default function SelectedSecteur() {
 
           <Row className='g-4'>
             <Col xs={12}>
-              <section className='rs-section-panel rs-section-panel--scroll' style={{ minHeight: '850px' }}>
+              {/* OPTIMISATION UX: suppression des hauteurs forcées
+                  pour éviter l'overflow/scroll imbriqué. La section
+                  s'adapte désormais à la taille réelle du contenu. */}
+              <section className='rs-section-panel rs-section-panel--scroll'>
                 <AppartementListe />
               </section>
             </Col>

@@ -19,6 +19,19 @@ export const useAllRental = () =>
     staleTime: 1000 * 60 * 5, //chaque 5 minutes rafraichir les données
   });
 
+// ------------------------------------------------------------
+// OPTIMISATION (/secteur/:id): rentals filtrés par secteur
+// ------------------------------------------------------------
+// Objectif: éviter de charger toutes les réservations puis filtrer côté front.
+export const useRentalsBySecteur = (secteurId) =>
+  useQuery({
+    queryKey: ['rentals', 'bySecteur', secteurId],
+    queryFn: () =>
+      api.get(`/rentals/bySecteur/${secteurId}`).then((res) => res.data),
+    enabled: Boolean(secteurId),
+    staleTime: 1000 * 60 * 2,
+  });
+
 // Obtenir une rentals
 export const useOneRental = (id) =>
   useQuery({
