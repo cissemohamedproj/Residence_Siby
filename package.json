@@ -1,14 +1,14 @@
 {
-  "name": "gestion_quincaillerie",
+  "name": "residence-siby",
   "version": "1.0.0",
   "description": "projet de gestion d'ecole",
-  "homepage": "https://github.com/McOriginal/Quincaillerie-DUBAI#readme",
+  "homepage": "https://github.com/McOriginal/Residence_Siby#readme",
   "bugs": {
-    "url": "https://github.com/McOriginal/Quincaillerie-DUBAI/issues"
+    "url": "https://github.com/McOriginal/Residence_Siby/issues"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/McOriginal/Quincaillerie-DUBAI.git"
+    "url": "git+https://github.com/McOriginal/Residence_Siby.git"
   },
   "license": "ISC",
   "author": "Cisse Mohamed",
