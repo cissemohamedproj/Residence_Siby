@@ -196,7 +196,6 @@ const ReservationForm = ({ reservationToEdit, clientId, tog_form_modal }) => {
 
   const today = new Date();
 
-
    // Date initiale pour la date d'entrée = Demain
    const initialDatePlus1Day = new Date(today).setDate(today.getDate() + 1);
    const initialDatePlus1DayFormatted = new Date(initialDatePlus1Day).toISOString().substring(0, 10);
@@ -461,6 +460,7 @@ const ReservationForm = ({ reservationToEdit, clientId, tog_form_modal }) => {
               placeholder='Montant Payé...'
               type='number'
               min={minimumTotalPaye}
+              max={validation.values.totalAmount}
               className='form-control border-1 border-dark'
               id='totalPaye'
               onChange={validation.handleChange}

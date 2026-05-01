@@ -32,19 +32,24 @@ import {
   HomeButton,
 } from '../components/NavigationButton';
 import {
-  useAllRental,
   useDeleteRental,
   useUpdateRentalStatut,
+  useRentalsByClientPaged,
 } from '../../Api/queriesReservation';
 import ReservationForm from './ReservationForm';
 import { AuthContext } from '../../Auth/AuthContext';
 import Swal from 'sweetalert2';
 import ReçuReservation from './ReçuReservation';
+import PaginationControls from '../components/PaginationControls';
 export default function ReservationListe() {
   const param = useParams();
   const [form_modal, setForm_modal] = useState(false);
   const [reçue_modal, setRecue_model] = useState(false);
-  const { data: rentalsData, isLoading, error } = useAllRental();
+  // ------------------------------------------------------------
+  // OPTIMISATION: pagination + recherche (server-side)
+  // ------------------------------------------------------------
+  const [page, setPage] = useState(1);
+  const limit = 20;
   const { mutate: updateRentalStatut } = useUpdateRentalStatut();
   const { mutate: deleteRental, isLoading: isDeleting } = useDeleteRental();
   const { auth } = useContext(AuthContext);
@@ -59,19 +64,28 @@ export default function ReservationListe() {
   // State de Rechercher
   const [searchTerm, setSearchTerm] = useState('');
 
-  // Fonction pour filtrer les clients en fonction du terme de recherche
-  const filteredRental = rentalsData?.filter((item) => {
-    const search = searchTerm.toLowerCase();
-    return (
-      item?.client?._id.toString() === param.id.toString() &&
-      (`${item?.client?.firstName} ${item?.client?.lastName}`
-        .toLowerCase()
-        .includes(search) ||
-        item?.client?.phoneNumber.toString().includes(search) ||
-        item?.appartement?.secteur.adresse?.toString().includes(search) ||
-        new Date(item?.rentalDate)?.toLocaleDateString().includes(search))
-    );
+  // OPTIMISATION: les données sont filtrées par clientId + recherche côté backend.
+  const {
+    data: paged,
+    isLoading,
+    error,
+  } = useRentalsByClientPaged({
+    clientId: param?.id,
+    page,
+    limit,
+    search: searchTerm,
   });
+
+  // On garde la variable `filteredRental` pour conserver la logique d'affichage.
+  const filteredRental = paged?.items || [];
+
+  // ------------------------------------------------------------
+  // UX (client/:id): ne pas afficher "Erreur" quand la liste est simplement vide
+  // ------------------------------------------------------------
+  // Selon les environnements, une réponse 404 peut être utilisée pour "aucune donnée".
+  // Ici, on préfère montrer l'état vide plutôt qu'un message d'erreur.
+  const isRealError =
+    Boolean(error) && (error?.response?.status ?? 0) !== 404;
 
   function tog_form_modal() {
     setForm_modal(!form_modal);
@@ -205,7 +219,7 @@ export default function ReservationListe() {
                           Nombre:{' '}
                           <span className='badge bg-warning'>
                             {' '}
-                            {filteredRental?.length}{' '}
+                            {paged?.total ?? filteredRental?.length ?? 0}{' '}
                           </span>
                         </p>
                       </Col>
@@ -225,29 +239,41 @@ export default function ReservationListe() {
                               className='form-control search border border-dark rounded'
                               placeholder='Rechercher...'
                               value={searchTerm}
-                              onChange={(e) => setSearchTerm(e.target.value)}
+                              onChange={(e) => {
+                                // OPTIMISATION UX: recherche => retour page 1 (sans reload).
+                                setSearchTerm(e.target.value);
+                                setPage(1);
+                              }}
                             />
                           </div>
                         </div>
                       </Col>
                     </Row>
-                    {error && (
+                    {isRealError && (
                       <div className='text-danger text-center'>
                         Erreur de chargement des données
                       </div>
                     )}
                     {isLoading && <LoadingSpiner />}
 
+                    {/* OPTIMISATION UX: pagination en haut (visible + contrastée) */}
+                    <PaginationControls
+                      page={paged?.page}
+                      totalPages={paged?.totalPages}
+                      onPageChange={(p) => setPage(p)}
+                      wrapperClassName='mb-3 mt-2'
+                    />
+
                     <div
                       className='table-responsive table-card rs-table-scroll mt-3'
                       style={{ minHeight: 350 }}
                     >
-                      {!filteredRental?.length && !isLoading && !error && (
+                      {!filteredRental?.length && !isLoading && !isRealError && (
                         <div className='text-center text-mutate'>
                           Aucune Reservation Enregistré !
                         </div>
                       )}
-                      {!error && filteredRental?.length > 0 && !isLoading && (
+                      {!isRealError && filteredRental?.length > 0 && !isLoading && (
                         <table
                           className='table rs-data-table align-middle table-nowrap table-hover'
                           id='contratTable'

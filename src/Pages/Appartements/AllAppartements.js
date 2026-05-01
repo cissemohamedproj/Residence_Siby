@@ -8,29 +8,31 @@ import {
   formatPrice,
 } from '../components/capitalizeFunction';
 
-import { useAllAppartement } from '../../Api/queriesAppartement';
+import { useAppartementsPaged } from '../../Api/queriesAppartement';
 import {
   BackButton,
   DashboardButton,
   HomeButton,
 } from '../components/NavigationButton';
 import ActiveSecteur from '../Secteurs/ActiveSecteur';
+import PaginationControls from '../components/PaginationControls';
 
 export default function AllAppartements() {
-  // Recuperer la Liste des Appartement
-  const { data: appartementData, isLoading, error } = useAllAppartement();
+  // ------------------------------------------------------------
+  // OPTIMISATION: pagination + recherche (server-side)
+  // ------------------------------------------------------------
+  const [page, setPage] = useState(1);
+  const limit = 20;
   const [searchTerm, setSearchTerm] = useState('');
 
-  // Fonction pour la recherche
-
-  const filterAppartement = appartementData?.filter((item) => {
-    const search = searchTerm.toLowerCase();
-    return (
-      item?.name.toLowerCase().includes(search) ||
-      item?.appartementNumber.toString().includes(search) ||
-      item?.secteur?.adresse.includes(search)
-    );
+  const { data: paged, isLoading, error } = useAppartementsPaged({
+    page,
+    limit,
+    search: searchTerm,
   });
+
+  // On garde la variable `filterAppartement` pour conserver la logique d'affichage.
+  const filterAppartement = paged?.items || [];
 
   return (
     <React.Fragment>
@@ -57,7 +59,7 @@ export default function AllAppartements() {
                           Appartements Total:{' '}
                           <span className='badge bg-warning'>
                             {' '}
-                            {filterAppartement?.length}{' '}
+                            {paged?.total ?? filterAppartement?.length ?? 0}{' '}
                           </span>
                         </p>
                       )}
@@ -78,7 +80,11 @@ export default function AllAppartements() {
                             className='form-control search border border-dark rounded'
                             placeholder='Rechercher...'
                             value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
+                            onChange={(e) => {
+                              // OPTIMISATION UX: recherche => retour page 1 (sans reload).
+                              setSearchTerm(e.target.value);
+                              setPage(1);
+                            }}
                           />
                         </div>
                       </div>
@@ -91,6 +97,14 @@ export default function AllAppartements() {
                       </div>
                     )}
                     {isLoading && <LoadingSpiner />}
+
+                    {/* OPTIMISATION UX: pagination en haut (visible + contrastée) */}
+                    <PaginationControls
+                      page={paged?.page}
+                      totalPages={paged?.totalPages}
+                      onPageChange={(p) => setPage(p)}
+                      wrapperClassName='mb-3 mt-2'
+                    />
 
                     <div className='table-responsive table-card rs-table-scroll mt-3 mb-1'>
                       {!filterAppartement?.length && !isLoading && !error && (

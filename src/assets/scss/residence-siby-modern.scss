@@ -656,6 +656,45 @@ button.rs-nav-btn {
   overflow-y: visible;
 }
 
+// ------------------------------------------------------------
+// Pagination (listes): barre contrastée + boutons visibles
+// ------------------------------------------------------------
+// Objectif UX: pagination toujours repérable (surtout en haut de tableau).
+.rs-pagination-bar {
+  padding: 0.55rem 0.75rem;
+  border-radius: 12px;
+  border: 1px solid rgba(15, 23, 42, 0.14);
+  background: linear-gradient(135deg, #0f172a 0%, #134e4a 55%, #0d9488 100%);
+  box-shadow: 0 10px 26px rgba(15, 23, 42, 0.18);
+}
+
+.rs-pagination-bar .pagination {
+  margin-bottom: 0;
+}
+
+.rs-pagination-bar .page-link {
+  color: #f8fafc !important;
+  background: rgba(255, 255, 255, 0.08) !important;
+  border: 1px solid rgba(255, 255, 255, 0.18) !important;
+  font-weight: 700;
+}
+
+.rs-pagination-bar .page-item.active .page-link {
+  color: #0f172a !important;
+  background: #fde047 !important; // jaune très visible
+  border-color: rgba(253, 224, 71, 0.95) !important;
+  box-shadow: 0 0 0 3px rgba(253, 224, 71, 0.22);
+}
+
+.rs-pagination-bar .page-item.disabled .page-link {
+  opacity: 0.45;
+}
+
+.rs-pagination-bar .page-link:hover {
+  background: rgba(255, 255, 255, 0.16) !important;
+  border-color: rgba(255, 255, 255, 0.28) !important;
+}
+
 .rs-data-table {
   border-collapse: separate;
   border-spacing: 0;

@@ -29,6 +29,20 @@ export const useClientCount = () =>
     staleTime: 1000 * 60 * 2,
   });
 
+// ------------------------------------------------------------
+// OPTIMISATION (clients liste): pagination + recherche (server-side)
+// ------------------------------------------------------------
+export const useClientsPaged = ({ page = 1, limit = 20, search = '' }) =>
+  useQuery({
+    queryKey: ['clients', 'paged', { page, limit, search }],
+    queryFn: () =>
+      api
+        .get('/clients/paged', { params: { page, limit, search } })
+        .then((res) => res.data),
+    keepPreviousData: true, // évite le "flash" lors du changement de page
+    staleTime: 1000 * 30,
+  });
+
 // Obtenir une clients
 export const useOneClient = (id) =>
   useQuery({

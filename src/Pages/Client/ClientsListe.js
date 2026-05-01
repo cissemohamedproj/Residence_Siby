@@ -9,10 +9,9 @@ import {
   formatPrice,
 } from '../components/capitalizeFunction';
 import { deleteButton } from '../components/AlerteModal';
-import { useAllClient, useDeleteClient } from '../../Api/queriesClient';
+import { useClientsPaged, useDeleteClient } from '../../Api/queriesClient';
 import ClientForm from './ClientForm';
 import { useNavigate } from 'react-router-dom';
-import { useAllContrat } from '../../Api/queriesContrat';
 import {
   BackButton,
   DashboardButton,
@@ -20,36 +19,41 @@ import {
 } from '../components/NavigationButton';
 import ActiveSecteur from '../Secteurs/ActiveSecteur';
 import { AuthContext } from '../../Auth/AuthContext';
+import PaginationControls from '../components/PaginationControls';
 
 export default function ClientListe() {
   const { auth } = useContext(AuthContext);
   const connectedUserRole = auth?.user?.role ?? null;
   const [form_modal, setForm_modal] = useState(false);
-  const { data: clientData, isLoading, error } = useAllClient();
+  // ------------------------------------------------------------
+  // OPTIMISATION: pagination + recherche (server-side)
+  // ------------------------------------------------------------
+  const [page, setPage] = useState(1);
+  const limit = 20;
   const { mutate: deleteClient, isLoading: isDeleting } = useDeleteClient();
-  const { data: contrats } = useAllContrat();
   const [clientToUpdate, setClientToUpdate] = useState(null);
   const [formModalTitle, setFormModalTitle] = useState('Ajouter un Client');
   const navigate = useNavigate();
   // State de Rechercher
   const [searchTerm, setSearchTerm] = useState('');
 
-  // Fonction pour filtrer les clients en fonction du terme de recherche
-  const filteredClient = clientData?.filter((client) => {
-    const search = searchTerm.toLowerCase();
-    return (
-      `${client.firstName} ${client.lastName}`.toLowerCase().includes(search) ||
-      client.phoneNumber.toString().includes(search)
-    );
-  });
+  // OPTIMISATION: on récupère directement la page filtrée côté backend.
+  // NB: pas de reload page, React Query gère le cache.
+  const {
+    data: paged,
+    isLoading,
+    error,
+  } = useClientsPaged({ page, limit, search: searchTerm });
+
+  const filteredClient = paged?.items || [];
 
   function tog_form_modal() {
     setForm_modal(!form_modal);
   }
 
   const clientContrat = (client) => {
-    return contrats?.filter((value) => value?.client?._id === client?._id)
-      ?.length;
+    // OPTIMISATION: le backend calcule `contractCount` par client (badge).
+    return client?.contractCount || 0;
   };
 
   return (
@@ -108,7 +112,7 @@ export default function ClientListe() {
                           Total Clients:{' '}
                           <span className='badge bg-warning'>
                             {' '}
-                            {filteredClient?.length}{' '}
+                            {paged?.total ?? filteredClient?.length ?? 0}{' '}
                           </span>
                         </p>
                       </Col>
@@ -128,7 +132,13 @@ export default function ClientListe() {
                               className='form-control search border border-dark rounded'
                               placeholder='Rechercher...'
                               value={searchTerm}
-                              onChange={(e) => setSearchTerm(e.target.value)}
+                              onChange={(e) => {
+                                // OPTIMISATION UX: si la recherche change,
+                                // on revient à la 1ère page pour afficher des résultats
+                                // sans forcer l'utilisateur à "changer la page index".
+                                setSearchTerm(e.target.value);
+                                setPage(1);
+                              }}
                             />
                           </div>
                         </div>
@@ -140,6 +150,14 @@ export default function ClientListe() {
                       </div>
                     )}
                     {isLoading && <LoadingSpiner />}
+
+                    {/* OPTIMISATION UX: pagination en haut (visible + contrastée) */}
+                    <PaginationControls
+                      page={paged?.page}
+                      totalPages={paged?.totalPages}
+                      onPageChange={(p) => setPage(p)}
+                      wrapperClassName='mb-3 mt-2'
+                    />
 
                     <div className='table-responsive table-card rs-table-scroll mt-3 mb-1'>
                       {!filteredClient?.length && !isLoading && !error && (
@@ -188,7 +206,8 @@ export default function ClientListe() {
                             {filteredClient?.map((client, index) => (
                               <tr key={client._id}>
                                 <th className='rs-td-num' scope='row'>
-                                  {index + 1}
+                                  {/* OPTIMISATION: index global (page) */}
+                                  {(page - 1) * limit + index + 1}
                                 </th>
                                 <td className='rs-td-actions'>
                                   <button

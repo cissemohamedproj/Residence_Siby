@@ -26,9 +26,9 @@ import {
   successMessageAlert,
 } from '../components/AlerteModal';
 import {
-  useAllContrat,
   useDeleteContrat,
   useStopeContrat,
+  useContratsPaged,
 } from '../../Api/queriesContrat';
 import { useNavigate } from 'react-router-dom';
 import ContratForm from './ContratForm';
@@ -40,9 +40,14 @@ import {
 import ActiveSecteur from '../Secteurs/ActiveSecteur';
 import Swal from 'sweetalert2';
 import { AuthContext } from '../../Auth/AuthContext';
+import PaginationControls from '../components/PaginationControls';
 export default function ContratListe() {
   const [form_modal, setForm_modal] = useState(false);
-  const { data: contratData, isLoading, error } = useAllContrat();
+  // ------------------------------------------------------------
+  // OPTIMISATION: pagination + recherche (server-side)
+  // ------------------------------------------------------------
+  const [page, setPage] = useState(1);
+  const limit = 20;
   const { mutate: stopeContrat } = useStopeContrat();
 
   const { mutate: deleteContrat, isLoading: isDeleting } = useDeleteContrat();
@@ -56,21 +61,15 @@ export default function ContratListe() {
   // State de Rechercher
   const [searchTerm, setSearchTerm] = useState('');
 
-  // Fonction pour filtrer les clients en fonction du terme de recherche
-  const filteredContrat = contratData?.filter((contrat) => {
-    const search = searchTerm.toLowerCase();
-    return (
-      `${contrat?.client?.firstName} ${contrat?.client?.lastName}`
-        .toLowerCase()
-        .includes(search) ||
-      contrat?.client?.phoneNumber.toString().includes(search) ||
-      contrat?.amount.toString().includes(search) ||
-      contrat?.totalAmount.toString().includes(search) ||
-      contrat?.appartement?.secteur.adresse?.toString().includes(search) ||
-      new Date(contrat?.startDate)?.toLocaleDateString().includes(search) ||
-      new Date(contrat?.endDate)?.toLocaleDateString().includes(search)
-    );
-  });
+  // OPTIMISATION: recherche + pagination côté backend.
+  const {
+    data: paged,
+    isLoading,
+    error,
+  } = useContratsPaged({ page, limit, search: searchTerm });
+
+  // On garde la variable `filteredContrat` pour ne pas changer la logique d'affichage.
+  const filteredContrat = paged?.items || [];
 
   function tog_form_modal() {
     setForm_modal(!form_modal);
@@ -175,7 +174,7 @@ export default function ContratListe() {
                           Nombre:{' '}
                           <span className='badge bg-warning'>
                             {' '}
-                            {contratData?.length}{' '}
+                            {paged?.total ?? filteredContrat?.length ?? 0}{' '}
                           </span>
                         </p>
                       </Col>
@@ -195,7 +194,13 @@ export default function ContratListe() {
                               className='form-control search border border-dark rounded'
                               placeholder='Rechercher...'
                               value={searchTerm}
-                              onChange={(e) => setSearchTerm(e.target.value)}
+                              onChange={(e) => {
+                                // OPTIMISATION UX: on revient à la 1ère page
+                                // quand la recherche change, pour afficher des résultats
+                                // immédiatement sans recharger la page.
+                                setSearchTerm(e.target.value);
+                                setPage(1);
+                              }}
                             />
                           </div>
                         </div>
@@ -207,6 +212,14 @@ export default function ContratListe() {
                       </div>
                     )}
                     {isLoading && <LoadingSpiner />}
+
+                    {/* OPTIMISATION UX: pagination en haut (visible + contrastée) */}
+                    <PaginationControls
+                      page={paged?.page}
+                      totalPages={paged?.totalPages}
+                      onPageChange={(p) => setPage(p)}
+                      wrapperClassName='mb-3 mt-2'
+                    />
 
                     <div
                       className='table-responsive table-card rs-table-scroll mt-3'

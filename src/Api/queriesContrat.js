@@ -60,6 +60,20 @@ export const useActiveContrats = () =>
   });
 
 // ------------------------------------------------------------
+// OPTIMISATION (contrats liste): pagination + recherche (server-side)
+// ------------------------------------------------------------
+export const useContratsPaged = ({ page = 1, limit = 20, search = '' }) =>
+  useQuery({
+    queryKey: ['contrats', 'paged', { page, limit, search }],
+    queryFn: () =>
+      api
+        .get('/contrats/paged', { params: { page, limit, search } })
+        .then((res) => res.data),
+    keepPreviousData: true,
+    staleTime: 1000 * 30,
+  });
+
+// ------------------------------------------------------------
 // OPTIMISATION (/secteur/:id): contrats filtrés par secteur
 // ------------------------------------------------------------
 // Objectif: éviter de charger tous les contrats puis filtrer côté front.

@@ -38,6 +38,12 @@ export default function ClientComissionListe() {
     (item) => item?.client?._id === param?.id
   );
 
+  // ------------------------------------------------------------
+  // UX (client/:id): ne pas afficher "Erreur" quand la liste est simplement vide
+  // ------------------------------------------------------------
+  const isRealError =
+    Boolean(error) && (error?.response?.status ?? 0) !== 404;
+
   // Total Payés
   const sumTotalComission = filterComission?.reduce((curr, item) => {
     return (curr += item?.amount);
@@ -107,7 +113,7 @@ export default function ClientComissionListe() {
                       </Button>
                     </div>
 
-                    {error && (
+                    {isRealError && (
                       <div className='text-danger text-center'>
                         Erreur de chargement des données
                       </div>
@@ -120,7 +126,7 @@ export default function ClientComissionListe() {
                           Aucune Comission trouver !
                         </div>
                       )}
-                      {!error && !isLoading && filterComission?.length > 0 && (
+                      {!isRealError && !isLoading && filterComission?.length > 0 && (
                         <table className='table rs-data-table align-middle table-nowrap table-hover'>
                           <thead className='table-light'>
                             <tr className='text-center'>

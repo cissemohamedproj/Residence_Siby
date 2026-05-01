@@ -39,6 +39,20 @@ export const useAppartementCount = () =>
   });
 
 // ------------------------------------------------------------
+// OPTIMISATION (appartements liste): pagination + recherche (server-side)
+// ------------------------------------------------------------
+export const useAppartementsPaged = ({ page = 1, limit = 20, search = '' }) =>
+  useQuery({
+    queryKey: ['appartements', 'paged', { page, limit, search }],
+    queryFn: () =>
+      api
+        .get('/appartements/paged', { params: { page, limit, search } })
+        .then((res) => res.data),
+    keepPreviousData: true,
+    staleTime: 1000 * 30,
+  });
+
+// ------------------------------------------------------------
 // OPTIMISATION (/home): stats légères par secteur
 // ------------------------------------------------------------
 // Objectif: sur la page /home (Secteurs), on a surtout besoin des
