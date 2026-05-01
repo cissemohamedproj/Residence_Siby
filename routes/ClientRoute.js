@@ -14,6 +14,11 @@ router.post(
 // Afficher toutes les Clients
 router.get('/getAllClients', clientController.getAllClients);
 
+// ------------------------------------------------------------
+// OPTIMISATION (dashboard): total clients (count only)
+// ------------------------------------------------------------
+router.get('/count', clientController.getClientCount);
+
 // Afficher un seul Client
 router.get('/getClient/:id', clientController.getClient);
 

@@ -374,6 +374,40 @@ exports.getContratsBySecteur = async (req, res) => {
   }
 };
 
+// ------------------------------------------------------------
+// OPTIMISATION (dashboard): total contrats (count only)
+// ------------------------------------------------------------
+// Objectif: éviter de charger tous les contrats juste pour afficher un total.
+exports.getContratCount = async (req, res) => {
+  try {
+    const total = await Contrat.countDocuments({});
+    return res.status(200).json({ total });
+  } catch (error) {
+    return res.status(404).json({ message: error });
+  }
+};
+
+// ------------------------------------------------------------
+// OPTIMISATION (dashboard): contrats actifs (statut=true)
+// ------------------------------------------------------------
+// Objectif: le dashboard affiche "Contrats en cours".
+// On évite de charger tous les contrats puis filtrer côté front.
+// NB: on conserve les mêmes populate (mêmes champs utilisés par le tableau).
+exports.getActiveContrats = async (req, res) => {
+  try {
+    const contrats = await Contrat.find({ statut: true })
+      .populate('client')
+      .populate('appartement')
+      .populate({ path: 'appartement', populate: 'secteur' })
+      .populate('user')
+      .sort({ startDate: -1 });
+
+    return res.status(200).json(contrats);
+  } catch (error) {
+    return res.status(404).json({ message: error });
+  }
+};
+
 // Récupérer un Contrat
 exports.getContrat = async (req, res) => {
   try {

@@ -171,6 +171,19 @@ exports.getAppartementsBySecteur = async (req, res) => {
   }
 };
 
+// ------------------------------------------------------------
+// OPTIMISATION (dashboard): total appartements (count only)
+// ------------------------------------------------------------
+// Objectif: éviter de charger tous les appartements juste pour afficher un total.
+exports.getAppartementCount = async (req, res) => {
+  try {
+    const total = await Appartement.countDocuments({});
+    return res.status(200).json({ total });
+  } catch (err) {
+    return res.status(400).json({ status: 'error', message: err.message });
+  }
+};
+
 // Supprimer un Produit
 exports.deleteAppartement = async (req, res) => {
   try {

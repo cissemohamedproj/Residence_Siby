@@ -99,6 +99,20 @@ exports.getAllSecteurs = async (req, res) => {
   }
 };
 
+// ------------------------------------------------------------
+// OPTIMISATION (dashboard): total secteurs (count only)
+// ------------------------------------------------------------
+// Objectif: éviter de charger tous les secteurs juste pour afficher un total.
+// NB: aucune modification de schéma / logique métier.
+exports.getSecteurCount = async (req, res) => {
+  try {
+    const total = await Secteur.countDocuments({});
+    return res.status(200).json({ total });
+  } catch (e) {
+    return res.status(404).json({ message: e.message });
+  }
+};
+
 // Récupérer un Secteur par ID
 exports.getSecteur = async (req, res) => {
   try {

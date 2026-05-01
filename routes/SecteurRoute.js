@@ -14,6 +14,11 @@ router.post(
 // Afficher une toutes les Secteur
 router.get('/getAllSecteurs', contratController.refrechContrats,secteurController.getAllSecteurs);
 
+// ------------------------------------------------------------
+// OPTIMISATION (dashboard): total secteurs (count only)
+// ------------------------------------------------------------
+router.get('/count', secteurController.getSecteurCount);
+
 
 
 // Afficher une seule Secteur

@@ -26,6 +26,11 @@ router.get('/bySecteur/:id', appartement.getAppartementsBySecteur);
 // télécharger toute la collection Appartements.
 router.get('/statsBySecteur', appartement.getAppartementStatsBySecteur);
 
+// ------------------------------------------------------------
+// OPTIMISATION (dashboard): total appartements (count only)
+// ------------------------------------------------------------
+router.get('/count', appartement.getAppartementCount);
+
 
 
 // Afficher une seule Appartement

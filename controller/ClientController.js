@@ -117,6 +117,19 @@ exports.getAllClients = async (req, res) => {
   }
 };
 
+// ------------------------------------------------------------
+// OPTIMISATION (dashboard): total clients (count only)
+// ------------------------------------------------------------
+// Objectif: éviter de charger tous les clients juste pour afficher un total.
+exports.getClientCount = async (req, res) => {
+  try {
+    const total = await Client.countDocuments({});
+    return res.status(200).json({ total });
+  } catch (error) {
+    return res.status(404).json({ message: error });
+  }
+};
+
 // Récupérer un Client par ID
 exports.getClient = async (req, res) => {
   try {

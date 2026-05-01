@@ -28,6 +28,16 @@ router.get('/getAllContrats',contratController.refrechContrats ,contratControlle
 // ------------------------------------------------------------
 router.get('/bySecteur/:id', contratController.getContratsBySecteur);
 
+// ------------------------------------------------------------
+// OPTIMISATION (dashboard): total contrats (count only)
+// ------------------------------------------------------------
+router.get('/count', contratController.getContratCount);
+
+// ------------------------------------------------------------
+// OPTIMISATION (dashboard): contrats en cours (statut=true)
+// ------------------------------------------------------------
+router.get('/active', contratController.getActiveContrats);
+
 // Afficher un seul Contrat
 router.get('/getContrat/:id', contratController.getContrat);
 
