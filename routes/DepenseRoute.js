@@ -17,6 +17,11 @@ router.put('/updateDepense/:id', depenseController.updateDepense);
 // Route to get all expenses
 router.get('/getAllDepense', depenseController.getAllDepenses);
 
+// ------------------------------------------------------------
+// OPTIMISATION (depenses): pagination + recherche (server-side)
+// ------------------------------------------------------------
+router.get('/paged', depenseController.getDepensesPaged);
+
 // Route to get an expense by ID
 router.get('/getDepenseById/:id', depenseController.getDepenseById);
 

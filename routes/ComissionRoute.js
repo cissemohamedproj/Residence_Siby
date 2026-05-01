@@ -14,6 +14,11 @@ router.post(
 // Trouvez tous les Comissions
 router.get('/getAllComissions', comissionController.getAllComission);
 
+// ------------------------------------------------------------
+// OPTIMISATION (commissions): pagination + recherche (server-side)
+// ------------------------------------------------------------
+router.get('/paged', comissionController.getComissionsPaged);
+
 // Trouvez un Comissions
 router.get('/getOneComission/:id', comissionController.getComission);
 

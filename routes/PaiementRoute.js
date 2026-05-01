@@ -19,6 +19,16 @@ router.get('/getAllPaiements', paiementController.getAllPaiements);
 // ------------------------------------------------------------
 router.get('/bySecteur/:id', paiementController.getPaiementsBySecteur);
 
+// ------------------------------------------------------------
+// OPTIMISATION (paiements): pagination + recherche (server-side)
+// ------------------------------------------------------------
+router.get('/paged', paiementController.getPaiementsPaged);
+
+// ------------------------------------------------------------
+// OPTIMISATION (paiements): résumé global (totaux)
+// ------------------------------------------------------------
+router.get('/summary', paiementController.getPaiementsSummary);
+
 // Trouvez un paiements
 router.get('/getOnePaiement/:id', paiementController.getPaiement);
 
