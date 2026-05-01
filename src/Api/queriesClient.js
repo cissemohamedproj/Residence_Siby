@@ -19,6 +19,16 @@ export const useAllClient = () =>
     staleTime: 1000 * 60 * 5, //chaque 5 minutes rafraichir les données
   });
 
+// ------------------------------------------------------------
+// OPTIMISATION (dashboard): total clients (count only)
+// ------------------------------------------------------------
+export const useClientCount = () =>
+  useQuery({
+    queryKey: ['clients', 'count'],
+    queryFn: () => api.get('/clients/count').then((res) => res.data),
+    staleTime: 1000 * 60 * 2,
+  });
+
 // Obtenir une clients
 export const useOneClient = (id) =>
   useQuery({

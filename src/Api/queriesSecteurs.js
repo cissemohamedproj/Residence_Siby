@@ -27,6 +27,16 @@ export const useAllSecteur = () =>
     queryFn: () => api.get('/secteurs/getAllSecteurs').then((res) => res.data),
   });
 
+// ------------------------------------------------------------
+// OPTIMISATION (dashboard): total secteurs (count only)
+// ------------------------------------------------------------
+export const useSecteurCount = () =>
+  useQuery({
+    queryKey: ['secteurs', 'count'],
+    queryFn: () => api.get('/secteurs/count').then((res) => res.data),
+    staleTime: 1000 * 60 * 2,
+  });
+
 // Obtenir un Secteur
 export const useOneSecteur = (id) =>
   useQuery({

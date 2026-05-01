@@ -40,6 +40,26 @@ export const useAllContrat = () =>
   });
 
 // ------------------------------------------------------------
+// OPTIMISATION (dashboard): total contrats (count only)
+// ------------------------------------------------------------
+export const useContratCount = () =>
+  useQuery({
+    queryKey: ['contrats', 'count'],
+    queryFn: () => api.get('/contrats/count').then((res) => res.data),
+    staleTime: 1000 * 60 * 2,
+  });
+
+// ------------------------------------------------------------
+// OPTIMISATION (dashboard): contrats actifs (statut=true)
+// ------------------------------------------------------------
+export const useActiveContrats = () =>
+  useQuery({
+    queryKey: ['contrats', 'active'],
+    queryFn: () => api.get('/contrats/active').then((res) => res.data),
+    staleTime: 1000 * 30, // refresh rapide: tableau de bord
+  });
+
+// ------------------------------------------------------------
 // OPTIMISATION (/secteur/:id): contrats filtrés par secteur
 // ------------------------------------------------------------
 // Objectif: éviter de charger tous les contrats puis filtrer côté front.

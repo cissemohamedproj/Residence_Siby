@@ -12,7 +12,7 @@ import {
   TotalClient,
   TotalContrat,
 } from './Total_Items';
-import { useAllContrat } from '../../Api/queriesContrat';
+import { useActiveContrats } from '../../Api/queriesContrat';
 import {
   capitalizeWords,
   formatPhoneNumber,
@@ -31,7 +31,7 @@ const Dashboard = () => {
     data: contrats,
     isLoading: loadingContrat,
     error: errorContrat,
-  } = useAllContrat();
+  } = useActiveContrats();
 
   const navigate = useNavigate();
 

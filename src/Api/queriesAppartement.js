@@ -29,6 +29,16 @@ export const useAllAppartement = () =>
   });
 
 // ------------------------------------------------------------
+// OPTIMISATION (dashboard): total appartements (count only)
+// ------------------------------------------------------------
+export const useAppartementCount = () =>
+  useQuery({
+    queryKey: ['appartements', 'count'],
+    queryFn: () => api.get('/appartements/count').then((res) => res.data),
+    staleTime: 1000 * 60 * 2,
+  });
+
+// ------------------------------------------------------------
 // OPTIMISATION (/home): stats légères par secteur
 // ------------------------------------------------------------
 // Objectif: sur la page /home (Secteurs), on a surtout besoin des

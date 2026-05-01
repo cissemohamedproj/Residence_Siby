@@ -2,17 +2,17 @@ import { Card } from 'reactstrap';
 import LoadingSpiner from '../components/LoadingSpiner';
 
 import { useNavigate } from 'react-router-dom';
-import { useAllSecteur } from '../../Api/queriesSecteurs';
-import { useAllAppartement } from '../../Api/queriesAppartement';
-import { useAllClient } from '../../Api/queriesClient';
-import { useAllContrat } from '../../Api/queriesContrat';
+import { useSecteurCount } from '../../Api/queriesSecteurs';
+import { useAppartementCount } from '../../Api/queriesAppartement';
+import { useClientCount } from '../../Api/queriesClient';
+import { useContratCount } from '../../Api/queriesContrat';
 
 const TotalSecteur = () => {
   const {
-    data: secteurs,
+    data: secteursCount,
     isLoading: loadingSecteur,
     error: errorSecteur,
-  } = useAllSecteur();
+  } = useSecteurCount();
 
   const navigate = useNavigate();
 
@@ -27,7 +27,8 @@ const TotalSecteur = () => {
         <Card className='rs-stat-card d-flex gap-3 flex-column justify-content-center align-items-center'>
           <i className='fas fa-bezier-curve text-info rs-stat-icon'></i>
 
-          <h3 className='text-info'>{secteurs?.length}</h3>
+          {/* OPTIMISATION (dashboard): on affiche un count, sans charger toute la liste */}
+          <h3 className='text-info'>{secteursCount?.total ?? 0}</h3>
           <h5>Secteurs</h5>
         </Card>
       )}
@@ -36,7 +37,8 @@ const TotalSecteur = () => {
 };
 
 const TotalAppartement = () => {
-  const { data: appartement, isLoading: loading, error } = useAllAppartement();
+  // OPTIMISATION (dashboard): count only (évite getAllAppartements)
+  const { data: appartementCount, isLoading: loading, error } = useAppartementCount();
   const navigate = useNavigate();
 
   return (
@@ -49,7 +51,7 @@ const TotalAppartement = () => {
         <Card className='rs-stat-card d-flex gap-3 flex-column justify-content-center align-items-center'>
           <i className='fas fa-home text-info rs-stat-icon'></i>
 
-          <h3 className='text-info'>{appartement?.length}</h3>
+          <h3 className='text-info'>{appartementCount?.total ?? 0}</h3>
           <h5>Appartements</h5>
         </Card>
       )}
@@ -58,7 +60,8 @@ const TotalAppartement = () => {
 };
 
 const TotalClient = () => {
-  const { data: clients, isLoading: loading, error } = useAllClient();
+  // OPTIMISATION (dashboard): count only (évite getAllClients)
+  const { data: clientsCount, isLoading: loading, error } = useClientCount();
   const navigate = useNavigate();
 
   return (
@@ -68,7 +71,7 @@ const TotalClient = () => {
         <Card className='rs-stat-card d-flex gap-3 flex-column justify-content-center align-items-center'>
           <i className='fas fa-users text-info rs-stat-icon'></i>
 
-          <h3 className='text-info'>{clients?.length}</h3>
+          <h3 className='text-info'>{clientsCount?.total ?? 0}</h3>
           <h5>Clients</h5>
         </Card>
       )}
@@ -77,7 +80,8 @@ const TotalClient = () => {
 };
 
 const TotalContrat = () => {
-  const { data: contrat, isLoading: loading, error } = useAllContrat();
+  // OPTIMISATION (dashboard): count only (évite getAllContrats)
+  const { data: contratCount, isLoading: loading, error } = useContratCount();
   const navigate = useNavigate();
 
   return (
@@ -87,7 +91,7 @@ const TotalContrat = () => {
         <Card className='rs-stat-card d-flex gap-3 flex-column justify-content-center align-items-center'>
           <i className='fas fa-receipt text-info rs-stat-icon'></i>
 
-          <h3 className='text-info'>{contrat?.length}</h3>
+          <h3 className='text-info'>{contratCount?.total ?? 0}</h3>
           <h5>Contrats</h5>
         </Card>
       )}
