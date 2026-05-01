@@ -29,7 +29,7 @@ jobs:
             # Pull latest changes
             git reset --hard origin/v2_frontend || exit 1
             git config pull.rebase false
-            git reset --hard origin/v2_frontend || exit 1
+            git reset --hard  || exit 1
             git pull origin v2_frontend
 
             echo "Pull was successful, installing dependencies..."
