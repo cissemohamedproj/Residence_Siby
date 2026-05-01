@@ -35,36 +35,36 @@ app.use(bodyParser.urlencoded({ extended: true }));
 // Utilisation des routes étudiant
 // Ajoute un préfixe /api à toutes les routes
 
-app.use('/', userRoute);
+// app.use('/', userRoute);
 
 // Utilisation des routes Utilisateur
-app.use('/api/users', userRoute);
+app.use('/residence_siby/api/users', userRoute);
 
 // Routes pour Secteurs 
-app.use('/api/secteurs', secteurRoute);
+app.use('/residence_siby/api/secteurs', secteurRoute);
 
 
 // Utilisation des routes Appartements
-app.use('/api/appartements', appartementRoute);
+app.use('/residence_siby/api/appartements', appartementRoute);
 
 // Utilisation des routes client
-app.use('/api/clients', clientRoute);
+app.use('/residence_siby/api/clients', clientRoute);
 
 // Utilisation des routes contrats
-app.use('/api/contrats', contratRoute);
+app.use('/residence_siby/api/contrats', contratRoute);
 
 
 // Utilisation des routes rentals
-app.use('/api/rentals', rentalRoute);
+app.use('/residence_siby/api/rentals', rentalRoute);
 
 // Utilisation des routes Paiement
-app.use('/api/paiements', paiementRoute);
+app.use('/residence_siby/api/paiements', paiementRoute);
 
 // Utilisation des routes Comission
-app.use('/api/comissions', comissionRoute);
+app.use('/residence_siby/api/comissions', comissionRoute);
 
 // Utilisation des routes Depense
-app.use('/api/depenses', depenseRoute);
+app.use('/residence_siby/api/depenses', depenseRoute);
 
 //  Exporter le fichier APP
 module.exports = app;
