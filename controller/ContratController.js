@@ -345,6 +345,35 @@ exports.getAllContrat = async (req, res) => {
   }
 };
 
+// ------------------------------------------------------------
+// OPTIMISATION (/secteur/:id): contrats filtrés par secteur
+// ------------------------------------------------------------
+// Objectif: éviter "getAllContrats" + filtre côté front sur SelectedSecteur.
+// Stratégie (sans modifier les schémas):
+// - trouver les appartements du secteur
+// - récupérer les contrats liés à ces appartements
+exports.getContratsBySecteur = async (req, res) => {
+  try {
+    const secteurId = req.params.id;
+
+    const appartements = await Appartement.find({ secteur: secteurId })
+      .select('_id')
+      .exec();
+    const appartementIds = appartements.map((a) => a._id);
+
+    const contrats = await Contrat.find({ appartement: { $in: appartementIds } })
+      .populate('client')
+      .populate('appartement')
+      .populate({ path: 'appartement', populate: 'secteur' })
+      .populate('user')
+      .sort({ startDate: -1, statut: -1 });
+
+    return res.status(200).json(contrats);
+  } catch (error) {
+    return res.status(404).json({ message: error });
+  }
+};
+
 // Récupérer un Contrat
 exports.getContrat = async (req, res) => {
   try {

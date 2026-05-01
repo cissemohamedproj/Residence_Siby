@@ -14,6 +14,11 @@ router.post(
 // Afficher toutes les Rentals
 router.get('/getAllRentals', rentalController.getAllRental);
 
+// ------------------------------------------------------------
+// OPTIMISATION (/secteur/:id): rentals filtrés par secteur
+// ------------------------------------------------------------
+router.get('/bySecteur/:id', rentalController.getRentalsBySecteur);
+
 // Afficher un seul Rental
 router.get('/getRental/:id', rentalController.getRental);
 

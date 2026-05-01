@@ -150,6 +150,27 @@ exports.getOneAppartement = async (req, res) => {
   }
 };
 
+// ------------------------------------------------------------
+// OPTIMISATION (/secteur/:id): lister uniquement les appartements du secteur
+// ------------------------------------------------------------
+// Objectif: éviter "getAllAppartements" + filtre côté front sur SelectedSecteur.
+// NB: aucun changement de schéma, on ne change pas la logique métier: on renvoie
+// simplement le même type de documents, mais filtrés par secteur.
+exports.getAppartementsBySecteur = async (req, res) => {
+  try {
+    const secteurId = req.params.id;
+
+    const appartements = await Appartement.find({ secteur: secteurId })
+      .populate('secteur')
+      .populate('user')
+      .sort({ appartementNumber: 1 });
+
+    return res.status(200).json(appartements);
+  } catch (err) {
+    return res.status(400).json({ status: 'error', message: err.message });
+  }
+};
+
 // Supprimer un Produit
 exports.deleteAppartement = async (req, res) => {
   try {

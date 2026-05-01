@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const Rental = require('../models/RentalModel')
 const Contrat = require('../models/ContratModel');
+const Appartement = require('../models/AppartementModel');
 const Paiement = require('../models/PaiementModel');
 const Depense = require('../models/DepenseModel')
 const textValidation = require('./regexValidation');
@@ -282,6 +283,32 @@ exports.getAllRental = async (req, res) => {
     return res.status(200).json(result);
   } catch (error) {
    console.log(error)
+    return res.status(404).json({ message: error });
+  }
+};
+
+// ------------------------------------------------------------
+// OPTIMISATION (/secteur/:id): reservations filtrées par secteur
+// ------------------------------------------------------------
+// Objectif: éviter "getAllRentals" + filtre côté front sur SelectedSecteur.
+exports.getRentalsBySecteur = async (req, res) => {
+  try {
+    const secteurId = req.params.id;
+
+    const appartements = await Appartement.find({ secteur: secteurId })
+      .select('_id')
+      .exec();
+    const appartementIds = appartements.map((a) => a._id);
+
+    const result = await Rental.find({ appartement: { $in: appartementIds } })
+      .populate('client')
+      .populate({ path: 'appartement', populate: { path: 'secteur' } })
+      .populate('user')
+      .sort({ rentalDate: -1 });
+
+    return res.status(200).json(result);
+  } catch (error) {
+    console.log(error);
     return res.status(404).json({ message: error });
   }
 };

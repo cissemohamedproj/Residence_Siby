@@ -1,5 +1,8 @@
 const Paiement = require('../models/PaiementModel');
 const Comission = require('../models/ComissionModel');
+const Appartement = require('../models/AppartementModel');
+const Contrat = require('../models/ContratModel');
+const Rental = require('../models/RentalModel');
 
 // Enregistrer un paiement
 exports.createPaiement = async (req, res) => {
@@ -64,6 +67,60 @@ exports.getAllPaiements = async (req, res) => {
   } catch (err) {
     console.log(err)
     res.status(400).json({ status: 'error', message: err.message });
+  }
+};
+
+// ------------------------------------------------------------
+// OPTIMISATION (/secteur/:id): paiements filtrés par secteur
+// ------------------------------------------------------------
+// Objectif: éviter "getAllPaiements" + filtre côté front sur SelectedSecteur.
+// NB: on garde la même forme de données (populate identiques), on filtre seulement.
+exports.getPaiementsBySecteur = async (req, res) => {
+  try {
+    const secteurId = req.params.id;
+
+    // 1) Appartements du secteur
+    const appartements = await Appartement.find({ secteur: secteurId })
+      .select('_id')
+      .exec();
+    const appartementIds = appartements.map((a) => a._id);
+
+    // 2) Contrats du secteur
+    const contrats = await Contrat.find({ appartement: { $in: appartementIds } })
+      .select('_id')
+      .exec();
+    const contratIds = contrats.map((c) => c._id);
+
+    // 3) Rentals du secteur (pour ne pas perdre les paiements de réservations)
+    const rentals = await Rental.find({ appartement: { $in: appartementIds } })
+      .select('_id')
+      .exec();
+    const rentalIds = rentals.map((r) => r._id);
+
+    const paiements = await Paiement.find({
+      $or: [{ contrat: { $in: contratIds } }, { rental: { $in: rentalIds } }],
+    })
+      .populate({
+        path: 'contrat',
+        populate: [
+          { path: 'client' },
+          { path: 'appartement', populate: { path: 'secteur' } },
+        ],
+      })
+      .populate({
+        path: 'rental',
+        populate: [
+          { path: 'appartement', populate: { path: 'secteur' } },
+          { path: 'client' },
+        ],
+      })
+      .populate('user')
+      .sort({ paiementDate: -1 });
+
+    return res.status(200).json(paiements);
+  } catch (err) {
+    console.log(err);
+    return res.status(400).json({ status: 'error', message: err.message });
   }
 };
 

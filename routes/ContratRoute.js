@@ -23,6 +23,11 @@ router.post('/stopeContrat',contratController.stopContrat);
 // Afficher toutes les Contrats
 router.get('/getAllContrats',contratController.refrechContrats ,contratController.getAllContrat);
 
+// ------------------------------------------------------------
+// OPTIMISATION (/secteur/:id): contrats filtrés par secteur
+// ------------------------------------------------------------
+router.get('/bySecteur/:id', contratController.getContratsBySecteur);
+
 // Afficher un seul Contrat
 router.get('/getContrat/:id', contratController.getContrat);
 

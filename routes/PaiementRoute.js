@@ -14,6 +14,11 @@ router.post(
 // Trouvez tous les paiements
 router.get('/getAllPaiements', paiementController.getAllPaiements);
 
+// ------------------------------------------------------------
+// OPTIMISATION (/secteur/:id): paiements filtrés par secteur
+// ------------------------------------------------------------
+router.get('/bySecteur/:id', paiementController.getPaiementsBySecteur);
+
 // Trouvez un paiements
 router.get('/getOnePaiement/:id', paiementController.getPaiement);
 
