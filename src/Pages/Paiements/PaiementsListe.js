@@ -7,25 +7,37 @@ import {
   formatPhoneNumber,
   formatPrice,
 } from '../components/capitalizeFunction';
-import { useAllPaiements } from '../../Api/queriesPaiement';
+import { usePaiementsPaged, usePaiementsSummary } from '../../Api/queriesPaiement';
 import ReçuPaiement from './ReçuPaiement';
 import {
   BackButton,
   DashboardButton,
   HomeButton,
 } from '../components/NavigationButton';
-import { useAllContrat } from '../../Api/queriesContrat';
 import FormModal from '../components/FormModal';
 import PaiementForm from './PaiementForm';
-import { useAllRental } from '../../Api/queriesReservation';
 import { AuthContext } from '../../Auth/AuthContext';
+import PaginationControls from '../components/PaginationControls';
 
 export default function PaiementsListe() {
   const { auth } = useContext(AuthContext);
   const connectedUserRole = auth?.user?.role ?? null;
-  const { data: paiementsData, isLoading, error } = useAllPaiements();
-  const { data: contrats } = useAllContrat();
-  const { data: rentals } = useAllRental();
+  // ------------------------------------------------------------
+  // OPTIMISATION: pagination + recherche (server-side) + résumé global
+  // ------------------------------------------------------------
+  const [page, setPage] = useState(1);
+  const limit = 20;
+  const [searchTerm, setSearchTerm] = useState('');
+
+  const { data: paged, isLoading, error } = usePaiementsPaged({
+    page,
+    limit,
+    search: searchTerm,
+  });
+  const paiementsData = paged?.items || [];
+
+  // OPTIMISATION: totaux globaux renvoyés par le backend (sans charger contrats/rentals/paiements).
+  const { data: summary } = usePaiementsSummary();
   const [paiementToUpdate, setPaiementToUpdate] = useState(null);
   const [formModalTitle, setFormModalTitle] = useState('Nouveau Paiement');
   const [form_modal, setForm_modal] = useState(false);
@@ -49,25 +61,14 @@ export default function PaiementsListe() {
   //   return acc;
   // }, []);
 
-  // Total de commandes
-  const sumTotalRentalAmount = rentals?.reduce((curr, item) => {
-    return (curr += item?.totalAmount);
-  }, 0);
-
-  const sumTotalContratAmount = contrats?.reduce((curr, item) => {
-    return (curr += item?.totalAmount);
-  }, 0);
-
-  // Total Payés
-  const sumTotalPaye = paiementsData?.reduce((curr, item) => {
-    return (curr += item?.totalPaye);
-  }, 0);
+  // Total Payés (global)
+  const sumTotalPaye = summary?.sumTotalPaye ?? 0;
   // const sumTotalPaye = filterPaiement?.reduce((curr, item) => {
   //   return (curr += item?.totalPaye);
   // }, 0);
 
-  const sumTotalAmount = sumTotalContratAmount + sumTotalRentalAmount;
-  const sumTotalReliqua = sumTotalAmount - sumTotalPaye;
+  const sumTotalAmount = summary?.sumTotalAmount ?? 0;
+  const sumTotalReliqua = summary?.sumTotalReliqua ?? 0;
   // const sumTotalReliqua = filterPaiement?.reduce(
   //   (acc, item) => (acc += item?.contrat?.totalAmount - item?.totalPaye),
   //   0
@@ -127,6 +128,22 @@ export default function PaiementsListe() {
                     Liste de tous les Paiements
                   </h4>
                   <div id='paiementsList'>
+                    {/* OPTIMISATION UX: recherche sans rechargement + pagination */}
+                    <div className='d-flex justify-content-end mb-2'>
+                      <div className='search-box'>
+                        <input
+                          type='text'
+                          className='form-control search border border-dark rounded'
+                          placeholder='Rechercher...'
+                          value={searchTerm}
+                          onChange={(e) => {
+                            // OPTIMISATION UX: recherche => retour page 1
+                            setSearchTerm(e.target.value);
+                            setPage(1);
+                          }}
+                        />
+                      </div>
+                    </div>
                     <h6 className='text-end'>
                       Montant Total des Contrats:{' '}
                       <span className='text-info'>
@@ -151,6 +168,14 @@ export default function PaiementsListe() {
                       </div>
                     )}
                     {isLoading && <LoadingSpiner />}
+
+                    {/* OPTIMISATION UX: pagination en haut (visible + contrastée) */}
+                    <PaginationControls
+                      page={paged?.page}
+                      totalPages={paged?.totalPages}
+                      onPageChange={(p) => setPage(p)}
+                      wrapperClassName='mb-3 mt-2'
+                    />
 
                     <div className='table-responsive table-card rs-table-scroll mt-3 mb-1'>
                       {paiementsData?.length === 0 && (

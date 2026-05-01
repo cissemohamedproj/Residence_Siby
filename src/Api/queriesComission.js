@@ -27,6 +27,20 @@ export const useAllComissions = () =>
       api.get('/comissions/getAllComissions').then((res) => res.data),
   });
 
+// ------------------------------------------------------------
+// OPTIMISATION (commissions): pagination + recherche (server-side)
+// ------------------------------------------------------------
+export const useComissionsPaged = ({ page = 1, limit = 20, search = '' }) =>
+  useQuery({
+    queryKey: ['comissions', 'paged', { page, limit, search }],
+    queryFn: () =>
+      api
+        .get('/comissions/paged', { params: { page, limit, search } })
+        .then((res) => res.data),
+    keepPreviousData: true,
+    staleTime: 1000 * 30,
+  });
+
 // Obtenir une Paiement
 export const useOneComission = (id) =>
   useQuery({

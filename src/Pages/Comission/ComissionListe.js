@@ -8,16 +8,30 @@ import {
 } from '../components/capitalizeFunction';
 import { AuthContext } from '../../Auth/AuthContext';
 import {
-  useAllComissions,
+  useComissionsPaged,
   useDeleteComission,
 } from '../../Api/queriesComission';
 import ReçuComission from './ReçuComission';
 import { deleteButton } from '../components/AlerteModal';
+import PaginationControls from '../components/PaginationControls';
 
 export default function ComissionListe() {
   const { auth } = useContext(AuthContext);
   const connectedUserRole = auth?.user?.role ?? null;
-  const { data: comissionsData, isLoading, error } = useAllComissions();
+  // ------------------------------------------------------------
+  // OPTIMISATION: pagination + recherche (server-side)
+  // ------------------------------------------------------------
+  const [page, setPage] = useState(1);
+  const limit = 20;
+  const [searchTerm, setSearchTerm] = useState('');
+
+  const { data: paged, isLoading, error } = useComissionsPaged({
+    page,
+    limit,
+    search: searchTerm,
+  });
+
+  const comissionsData = paged?.items || [];
   const { mutate: deleteComission, isLoading: isDeletting } =
     useDeleteComission();
 
@@ -26,9 +40,9 @@ export default function ComissionListe() {
   const [show_modal, setShow_modal] = useState(false);
 
   // Total Payés
-  const sumTotalComission = comissionsData?.reduce((curr, item) => {
-    return (curr += item?.amount);
-  }, 0);
+  // OPTIMISATION: somme globale renvoyée par l'API (toutes les pages),
+  // pour conserver le même total sans charger toute la collection.
+  const sumTotalComission = paged?.sumTotalAmount ?? 0;
 
   // Ouverture de Modal Reçu Paiement
   function tog_show_modal() {
@@ -37,7 +51,7 @@ export default function ComissionListe() {
 
   return (
     <React.Fragment>
-      <div className='page-content'>
+      <div className='page-content' style={{marginTop: '100px'}}>
         {/* <ActiveSecteur /> */}
         <Container fluid>
           {/* -------------------- */}
@@ -48,10 +62,26 @@ export default function ComissionListe() {
           />
           {/* -------------------- */}
           <Row>
-            <Col lg={12}>
+            <Col lg={12} >
               <Card>
                 <CardBody>
                   <div id='paiementsList'>
+                    {/* OPTIMISATION UX: recherche sans rechargement + pagination */}
+                    <div className='d-flex justify-content-end mb-2'>
+                      <div className='search-box'>
+                        <input
+                          type='text'
+                          className='form-control search border border-dark rounded'
+                          placeholder='Rechercher...'
+                          value={searchTerm}
+                          onChange={(e) => {
+                            // OPTIMISATION UX: recherche => retour page 1
+                            setSearchTerm(e.target.value);
+                            setPage(1);
+                          }}
+                        />
+                      </div>
+                    </div>
                     <h6 className='text-end'>
                       Montant Total :{' '}
                       <span className='text-light badge bg-success px-2'>
@@ -65,6 +95,14 @@ export default function ComissionListe() {
                       </div>
                     )}
                     {isLoading && <LoadingSpiner />}
+
+                    {/* OPTIMISATION UX: pagination en haut (visible + contrastée) */}
+                    <PaginationControls
+                      page={paged?.page}
+                      totalPages={paged?.totalPages}
+                      onPageChange={(p) => setPage(p)}
+                      wrapperClassName='mb-3 mt-2'
+                    />
 
                     <div className='table-responsive table-card rs-table-scroll mt-3 mb-1'>
                       {comissionsData?.length === 0 && (

@@ -5,7 +5,7 @@ import FormModal from '../components/FormModal';
 import LoadingSpiner from '../components/LoadingSpiner';
 import { capitalizeWords, formatPrice } from '../components/capitalizeFunction';
 import { deleteButton } from '../components/AlerteModal';
-import { useAllDepenses, useDeleteDepense } from '../../Api/queriesDepense';
+import { useDepensesPaged, useDeleteDepense } from '../../Api/queriesDepense';
 import DepenseForm from './DepenseForm';
 import {
   BackButton,
@@ -14,11 +14,16 @@ import {
 } from '../components/NavigationButton';
 import ActiveSecteur from '../Secteurs/ActiveSecteur';
 import { AuthContext } from '../../Auth/AuthContext';
+import PaginationControls from '../components/PaginationControls';
 
 export default function DepenseListe() {
   const [form_modal, setForm_modal] = useState(false);
   const [formModalTitle, setFormModalTitle] = useState('Ajouter une Dépense');
-  const { data: depenseData, isLoading, error } = useAllDepenses();
+  // ------------------------------------------------------------
+  // OPTIMISATION: pagination + recherche (server-side)
+  // ------------------------------------------------------------
+  const [page, setPage] = useState(1);
+  const limit = 20;
   const { mutate: deleteDepense, isDeleting } = useDeleteDepense();
   const [depenseToUpdate, setDepenseToUpdate] = useState(null);
   const [todayExpense, setTodayExpense] = useState(false);
@@ -28,36 +33,21 @@ export default function DepenseListe() {
   // Search State
   const [searchTerm, setSearchTerm] = useState('');
 
-  // Fonction pour la recherche
-  const filterSearchDepense = depenseData
-    ?.filter((depense) => {
-      const search = searchTerm.toLowerCase();
+  const { data: paged, isLoading, error } = useDepensesPaged({
+    page,
+    limit,
+    search: searchTerm,
+    today: todayExpense,
+  });
 
-      return (
-        depense.motifDepense.toLowerCase().includes(search) ||
-        depense.totalAmount.toString().includes(search) ||
-        new Date(depense.dateOfDepense)
-          .toLocaleDateString('fr-Fr')
-          .toString()
-          .includes(search)
-      );
-    })
-
-    ?.filter((item) => {
-      if (todayExpense) {
-        return (
-          new Date(item?.dateOfDepense).toLocaleDateString() ===
-          new Date().toLocaleDateString()
-        );
-      }
-      return true;
-    });
+  // On garde la variable `filterSearchDepense` pour conserver la logique d'affichage.
+  // Les filtres sont appliqués côté backend (search + today).
+  const filterSearchDepense = paged?.items || [];
 
   // Total Expense
-  const sumTotalExpense = filterSearchDepense?.reduce(
-    (curr, item) => (curr += item?.totalAmount),
-    0
-  );
+  // OPTIMISATION: somme globale renvoyée par l'API (toutes les pages),
+  // pour conserver le même total sans charger toute la collection.
+  const sumTotalExpense = paged?.sumTotalAmount ?? 0;
 
   // Ouverture de Modal Form
   function tog_form_modal() {
@@ -132,7 +122,11 @@ export default function DepenseListe() {
                               className='form-control search border border-black rounded'
                               placeholder='Rechercher...'
                               value={searchTerm}
-                              onChange={(e) => setSearchTerm(e.target.value)}
+                            onChange={(e) => {
+                              // OPTIMISATION UX: recherche => retour page 1
+                              setSearchTerm(e.target.value);
+                              setPage(1);
+                            }}
                             />
                           </div>
                         </div>
@@ -150,7 +144,11 @@ export default function DepenseListe() {
                           type='checkbox'
                           className='form-check-input'
                           id='filterToday'
-                          onChange={() => setTodayExpense(!todayExpense)}
+                          onChange={() => {
+                            // OPTIMISATION UX: filtre => retour page 1
+                            setTodayExpense(!todayExpense);
+                            setPage(1);
+                          }}
                         />
                         <label
                           className='form-check-label'
@@ -166,6 +164,14 @@ export default function DepenseListe() {
                       </div>
                     )}
                     {isLoading && <LoadingSpiner />}
+
+                    {/* OPTIMISATION UX: pagination en haut (visible + contrastée) */}
+                    <PaginationControls
+                      page={paged?.page}
+                      totalPages={paged?.totalPages}
+                      onPageChange={(p) => setPage(p)}
+                      wrapperClassName='mb-3 mt-2'
+                    />
 
                     <div className='table-responsive table-card rs-table-scroll mt-3 mb-1'>
                       {filterSearchDepense?.length === 0 && (

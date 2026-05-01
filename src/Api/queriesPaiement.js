@@ -28,6 +28,30 @@ export const useAllPaiements = () =>
   });
 
 // ------------------------------------------------------------
+// OPTIMISATION (paiements): pagination + recherche (server-side)
+// ------------------------------------------------------------
+export const usePaiementsPaged = ({ page = 1, limit = 20, search = '' }) =>
+  useQuery({
+    queryKey: ['paiements', 'paged', { page, limit, search }],
+    queryFn: () =>
+      api
+        .get('/paiements/paged', { params: { page, limit, search } })
+        .then((res) => res.data),
+    keepPreviousData: true,
+    staleTime: 1000 * 30,
+  });
+
+// ------------------------------------------------------------
+// OPTIMISATION (paiements): résumé global (totaux)
+// ------------------------------------------------------------
+export const usePaiementsSummary = () =>
+  useQuery({
+    queryKey: ['paiements', 'summary'],
+    queryFn: () => api.get('/paiements/summary').then((res) => res.data),
+    staleTime: 1000 * 60, // les totaux ne changent pas à chaque seconde
+  });
+
+// ------------------------------------------------------------
 // OPTIMISATION (/secteur/:id): paiements filtrés par secteur
 // ------------------------------------------------------------
 // Objectif: éviter de charger tous les paiements puis filtrer côté front.

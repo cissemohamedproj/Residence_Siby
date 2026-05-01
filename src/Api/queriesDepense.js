@@ -26,6 +26,27 @@ export const useAllDepenses = () =>
     queryFn: () => api.get('/depenses/getAllDepense').then((res) => res.data),
   });
 
+// ------------------------------------------------------------
+// OPTIMISATION (depenses): pagination + recherche (server-side)
+// ------------------------------------------------------------
+export const useDepensesPaged = ({
+  page = 1,
+  limit = 20,
+  search = '',
+  today = false,
+}) =>
+  useQuery({
+    queryKey: ['depenses', 'paged', { page, limit, search, today }],
+    queryFn: () =>
+      api
+        .get('/depenses/paged', {
+          params: { page, limit, search, today: today ? 1 : 0 },
+        })
+        .then((res) => res.data),
+    keepPreviousData: true,
+    staleTime: 1000 * 30,
+  });
+
 // Obtenir une Depense
 export const useOneDepense = (id) =>
   useQuery({
