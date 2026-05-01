@@ -12,11 +12,15 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider } from './Auth/AuthContext';
 const queryClient = new QueryClient();
 
+
+
+const basename = '/residence_siby';
+
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <Provider store={configureStore({})}>
     <React.Fragment>
-      <BrowserRouter>
+      <BrowserRouter basename={basename}>
         <QueryClientProvider client={queryClient}>
           <AuthProvider>
             <App />

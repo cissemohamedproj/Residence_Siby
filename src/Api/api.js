@@ -2,8 +2,8 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: 'https://backend-residence-siby-0dg3.onrender.com/api',
-  // baseURL: 'http://localhost:5000/api',
+  // baseURL: 'http://5002/api',
+  baseURL: '/residence_siby/api',
 
   headers: {
     'Content-Type': 'application/json',
