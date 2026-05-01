@@ -100,6 +100,43 @@ exports.getAllAppartements = async (req, res) => {
   }
 };
 
+// ------------------------------------------------------------
+// OPTIMISATION (/home): statistiques légères par secteur
+// ------------------------------------------------------------
+// Objectif: éviter de charger tous les appartements côté front
+// pour uniquement calculer des totaux (Total / Libres) par secteur.
+//
+// NB: aucun changement de schéma, on calcule via aggregation.
+exports.getAppartementStatsBySecteur = async (req, res) => {
+  try {
+    const stats = await Appartement.aggregate([
+      {
+        $group: {
+          _id: '$secteur',
+          total: { $sum: 1 },
+          available: {
+            $sum: {
+              $cond: [{ $eq: ['$isAvailable', true] }, 1, 0],
+            },
+          },
+        },
+      },
+      {
+        $project: {
+          _id: 0,
+          secteur: '$_id',
+          total: 1,
+          available: 1,
+        },
+      },
+    ]);
+
+    return res.status(200).json(stats);
+  } catch (err) {
+    return res.status(400).json({ status: 'error', message: err.message });
+  }
+};
+
 
 //  Afficher une seule Appartement
 exports.getOneAppartement = async (req, res) => {

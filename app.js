@@ -38,6 +38,7 @@ const allowedOrigins = corsOriginsRaw
       'https://www.gestiongroupesiby.online',
       // Dev
       'http://localhost:3000',
+      'http://localhost:3000/residence_siby',
     ];
 
 // Petit helper pour tolérer www si l’admin l’utilise en prod.
@@ -60,7 +61,7 @@ const corsOptions = {
 };
 
 // CORS UNIQUEMENT pour l’API
-app.use('/api', cors(corsOptions));
+app.use('/residence_siby/api', cors(corsOptions));
 // Preflight pour toutes les routes /api/... (regex => pas de parsing path-to-regexp)
 app.options(/^\/api\/.*$/, cors(corsOptions));
 app.use(express.json()); // Parser les requêtes avec JSON

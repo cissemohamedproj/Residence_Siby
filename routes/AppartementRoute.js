@@ -14,6 +14,13 @@ router.post(
 // Afficher une toutes les Appartement
 router.get('/getAllAppartements',contratController.refrechContrats ,appartement.getAllAppartements);
 
+// ------------------------------------------------------------
+// OPTIMISATION (/home): stats légères (totaux) par secteur
+// ------------------------------------------------------------
+// Objectif: permettre au front d'afficher des compteurs sans
+// télécharger toute la collection Appartements.
+router.get('/statsBySecteur', appartement.getAppartementStatsBySecteur);
+
 
 
 // Afficher une seule Appartement
