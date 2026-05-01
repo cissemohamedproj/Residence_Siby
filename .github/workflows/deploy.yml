@@ -27,7 +27,7 @@ jobs:
             cd /home/mohamed/apps/residence_siby/backend || exit 1
 
             # Pull latest changes
-            git reset --hard
+            git reset --hard origin/master
             git config pull.rebase false
             git pull origin master
 
