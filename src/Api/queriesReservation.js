@@ -47,6 +47,26 @@ export const useRentalsBySecteur = (secteurId) =>
   });
 
 // ------------------------------------------------------------
+// OPTIMISATION (/secteur/:id): rentals paginés + recherche (server-side)
+// ------------------------------------------------------------
+export const useRentalsBySecteurPaged = ({
+  secteurId,
+  page = 1,
+  limit = 20,
+  search = '',
+}) =>
+  useQuery({
+    queryKey: ['rentals', 'bySecteur', 'paged', { secteurId, page, limit, search }],
+    queryFn: () =>
+      api
+        .get(`/rentals/bySecteur/${secteurId}/paged`, { params: { page, limit, search } })
+        .then((res) => res.data),
+    enabled: Boolean(secteurId),
+    keepPreviousData: true,
+    staleTime: 1000 * 30,
+  });
+
+// ------------------------------------------------------------
 // OPTIMISATION (reservations liste): pagination + recherche (server-side)
 // ------------------------------------------------------------
 export const useRentalsByClientPaged = ({

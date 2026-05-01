@@ -86,6 +86,26 @@ export const useContratsBySecteur = (secteurId) =>
     staleTime: 1000 * 60 * 2,
   });
 
+// ------------------------------------------------------------
+// OPTIMISATION (/secteur/:id): contrats paginés + recherche (server-side)
+// ------------------------------------------------------------
+export const useContratsBySecteurPaged = ({
+  secteurId,
+  page = 1,
+  limit = 20,
+  search = '',
+}) =>
+  useQuery({
+    queryKey: ['contrats', 'bySecteur', 'paged', { secteurId, page, limit, search }],
+    queryFn: () =>
+      api
+        .get(`/contrats/bySecteur/${secteurId}/paged`, { params: { page, limit, search } })
+        .then((res) => res.data),
+    enabled: Boolean(secteurId),
+    keepPreviousData: true,
+    staleTime: 1000 * 30,
+  });
+
 // Obtenir une contrats
 export const useOneContrat = (id) =>
   useQuery({

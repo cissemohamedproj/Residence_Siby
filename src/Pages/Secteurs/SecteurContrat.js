@@ -7,32 +7,39 @@ import {
   formatPrice,
 } from '../components/capitalizeFunction';
 import DureeSejourDisplay from '../components/DureeSejourDisplay';
-import { useContratsBySecteur } from '../../Api/queriesContrat';
+import { useContratsBySecteurPaged } from '../../Api/queriesContrat';
 import { useNavigate, useParams } from 'react-router-dom';
 import { AuthContext } from '../../Auth/AuthContext';
+import PaginationControls from '../components/PaginationControls';
 export default function SecteurContrat() {
   const param = useParams();
-  // OPTIMISATION: on charge uniquement les contrats du secteur sélectionné.
-  const { data: contratData, isLoading, error } = useContratsBySecteur(param?.id);
+  // ------------------------------------------------------------
+  // OPTIMISATION: pagination + recherche côté backend par secteur
+  // ------------------------------------------------------------
+  const [page, setPage] = useState(1);
+  const limit = 20;
+  // State de Rechercher
+  const [searchTerm, setSearchTerm] = useState('');
+
+  // IMPORTANT: page=1 à chaque changement de recherche
+  React.useEffect(() => {
+    setPage(1);
+  }, [searchTerm]);
+
+  const { data: paged, isLoading, error } = useContratsBySecteurPaged({
+    secteurId: param?.id,
+    page,
+    limit,
+    search: searchTerm,
+  });
 
   const navigate = useNavigate();
   const { auth } = useContext(AuthContext);
   const connectedUserRole = auth?.user?.role ?? null;
-  // State de Rechercher
-  const [searchTerm, setSearchTerm] = useState('');
 
-  // Fonction pour filtrer les clients en fonction du terme de recherche
-  const filteredContrat = contratData?.filter((contrat) => {
-    const search = searchTerm.toLowerCase();
-    return (
-      // OPTIMISATION: les contrats sont déjà filtrés par secteur côté backend.
-      // On conserve la logique de recherche exactement identique.
-      (`${contrat?.client?.firstName} ${contrat?.client?.lastName}`
-        .toLowerCase()
-        .includes(search) ||
-        contrat?.client?.phoneNumber.toString().includes(search))
-    );
-  });
+  // OPTIMISATION: recherche gérée côté backend => pas de filtre côté front
+  // On conserve le même nom de variable pour ne pas changer la logique d'affichage.
+  const filteredContrat = paged?.items || [];
 
   const today = new Date().toISOString().substring(0, 10);
 
@@ -50,7 +57,7 @@ export default function SecteurContrat() {
                     Nombre:{' '}
                     <span className='text-warning'>
                       {' '}
-                      {filteredContrat?.length}{' '}
+                      {paged?.total || 0}{' '}
                     </span>
                   </p>
                 </Col>
@@ -79,6 +86,14 @@ export default function SecteurContrat() {
                 </div>
               )}
               {isLoading && <LoadingSpiner />}
+
+              {/* OPTIMISATION UX: pagination toujours visible en haut */}
+              <PaginationControls
+                page={page}
+                totalPages={paged?.totalPages || 1}
+                onPageChange={setPage}
+                wrapperClassName='mb-3 mt-2'
+              />
 
               {/* OPTIMISATION UX: pas de maxHeight/minHeight forcés pour éviter
                   le scroll vertical interne. Le tableau prend la hauteur

@@ -3,7 +3,7 @@ name: Deploy Frontend To VPS
 on:
   push:
     branches:
-      - main
+      - v2_frontend
 
 jobs:
   deploy:
@@ -27,12 +27,14 @@ jobs:
             cd /home/mohamed/apps/residence_siby/frontend || exit 1
 
             # Pull latest changes
-            git reset --hard
-            git pull origin main 
+            git reset --hard origin/v2_frontend || exit 1
+            git config pull.rebase false
+            git reset --hard origin/v2_frontend || exit 1
+            git pull origin v2_frontend
 
             echo "Pull was successful, installing dependencies..."
             npm install
-            npm run build
+            npm run build || exit 1
 
             echo "Dependencies installed, Restart frontend (Nginx)..."
             sudo systemctl restart nginx

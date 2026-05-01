@@ -64,6 +64,34 @@ export const usePaiementsBySecteur = (secteurId) =>
     staleTime: 1000 * 60 * 2,
   });
 
+// ------------------------------------------------------------
+// OPTIMISATION (/secteur/:id): paiements CONTRAT paginés + recherche (server-side)
+// ------------------------------------------------------------
+export const usePaiementsContratBySecteurPaged = ({
+  secteurId,
+  page = 1,
+  limit = 20,
+  search = '',
+}) =>
+  useQuery({
+    queryKey: [
+      'paiements',
+      'bySecteur',
+      'contrats',
+      'paged',
+      { secteurId, page, limit, search },
+    ],
+    queryFn: () =>
+      api
+        .get(`/paiements/bySecteur/${secteurId}/contrats/paged`, {
+          params: { page, limit, search },
+        })
+        .then((res) => res.data),
+    enabled: Boolean(secteurId),
+    keepPreviousData: true,
+    staleTime: 1000 * 30,
+  });
+
 // Obtenir une Paiement
 export const useOnePaiement = (id) =>
   useQuery({

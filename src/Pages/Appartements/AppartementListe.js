@@ -12,24 +12,42 @@ import { deleteButton } from '../components/AlerteModal';
 
 import {
   useAppartementsBySecteur,
+  useAppartementsBySecteurPaged,
   useDeleteAppartement,
 } from '../../Api/queriesAppartement';
 import FormModal from '../components/FormModal';
 import AppartementForm from './AppartementForm';
 import { useOneSecteur } from '../../Api/queriesSecteurs';
 import { AuthContext } from '../../Auth/AuthContext';
+import PaginationControls from '../components/PaginationControls';
 
 export default function AppartementListe() {
   const secteur = useParams();
   const { auth } = useContext(AuthContext);
   const connectedUserRole = auth?.user?.role ?? null;
-  // Recuperer la Liste des Appartement
-  // OPTIMISATION: on charge uniquement les appartements du secteur sélectionné.
-  const {
-    data: appartementData,
-    isLoading,
-    error,
-  } = useAppartementsBySecteur(secteur.id);
+  // ------------------------------------------------------------
+  // OPTIMISATION: pagination + recherche côté backend par secteur
+  // ------------------------------------------------------------
+  const [page, setPage] = useState(1);
+  const [searchTerm, setSearchTerm] = useState('');
+  const limit = 20;
+
+  const { data: paged, isLoading, error } = useAppartementsBySecteurPaged({
+    secteurId: secteur.id,
+    page,
+    limit,
+    search: searchTerm,
+  });
+
+  // IMPORTANT: page=1 à chaque changement de recherche (UX identique aux autres pages).
+  React.useEffect(() => {
+    setPage(1);
+  }, [searchTerm]);
+
+  // OPTIMISATION: on conserve l'ancien hook non paginé disponible
+  // (utile si tu veux revenir au comportement précédent).
+  // eslint-disable-next-line no-unused-vars
+  const { data: appartementData } = useAppartementsBySecteur(secteur.id);
   const {
     data: selectedSecteurData,
     isLoading: secteurLoading,
@@ -51,9 +69,9 @@ export default function AppartementListe() {
 
   // Fonction pour la recherche
 
-  // OPTIMISATION: les données sont déjà filtrées côté backend.
-  // On garde la variable pour conserver la logique d'affichage inchangée.
-  const filterAppartement = appartementData;
+  // OPTIMISATION: données filtrées/recherchées/paginées côté backend.
+  // On garde le nom de variable pour conserver la logique d'affichage inchangée.
+  const filterAppartement = paged?.items || [];
 
   return (
     <React.Fragment>
@@ -105,15 +123,33 @@ export default function AppartementListe() {
                   )}
                   <Row className='d-flex justify-content-between align-items-center gap-4 mb-3'>
                     <Col>
-                      {filterAppartement?.length > 0 && (
+                      {paged?.total > 0 && (
                         <p className='text-center font-size-15 mt-2'>
                           Appartements Total:{' '}
                           <span className='text-warning'>
                             {' '}
-                            {filterAppartement?.length}{' '}
+                            {paged?.total}{' '}
                           </span>
                         </p>
                       )}
+                    </Col>
+                    <Col className='col-sm'>
+                      <div className='d-flex justify-content-sm-end gap-2'>
+                        {searchTerm !== '' && (
+                          <Button color='danger' onClick={() => setSearchTerm('')}>
+                            <i className='fas fa-window-close'></i>
+                          </Button>
+                        )}
+                        <div className='search-box me-4'>
+                          <input
+                            type='text'
+                            className='form-control search border border-dark rounded'
+                            placeholder='Rechercher...'
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                          />
+                        </div>
+                      </div>
                     </Col>
                   </Row>
                   <div id='appartementList'>
@@ -123,6 +159,14 @@ export default function AppartementListe() {
                       </div>
                     )}
                     {isLoading && <LoadingSpiner />}
+
+                    {/* OPTIMISATION UX: pagination toujours visible en haut */}
+                    <PaginationControls
+                      page={page}
+                      totalPages={paged?.totalPages || 1}
+                      onPageChange={setPage}
+                      wrapperClassName='mb-3 mt-2'
+                    />
 
                     <div
                       className='table-responsive table-card rs-table-scroll mt-3 mb-1'

@@ -7,30 +7,34 @@ import {
   formatPrice,
 } from '../components/capitalizeFunction';
 import DureeSejourDisplay from '../components/DureeSejourDisplay';
-import { useRentalsBySecteur } from '../../Api/queriesReservation';
+import { useRentalsBySecteurPaged } from '../../Api/queriesReservation';
 import { useParams } from 'react-router-dom';
+import PaginationControls from '../components/PaginationControls';
 export default function SecteurReservationListe() {
   const param = useParams();
-  // OPTIMISATION: on charge uniquement les réservations du secteur sélectionné.
-  const { data: rentalsData, isLoading, error } = useRentalsBySecteur(param?.id);
+  // ------------------------------------------------------------
+  // OPTIMISATION: pagination + recherche côté backend par secteur
+  // ------------------------------------------------------------
+  const [page, setPage] = useState(1);
+  const limit = 20;
 
   // State de Rechercher
   const [searchTerm, setSearchTerm] = useState('');
 
-  // Fonction pour filtrer les clients en fonction du terme de recherche
-  const filteredRental = rentalsData?.filter((item) => {
-    const search = searchTerm.toLowerCase();
-    return (
-      // OPTIMISATION: les réservations sont déjà filtrées par secteur côté backend.
-      // On conserve la logique de recherche exactement identique.
-      (`${item?.client?.firstName} ${item?.client?.lastName}`
-        .toLowerCase()
-        .includes(search) ||
-        item?.client?.phoneNumber.toString().includes(search) ||
-        item?.appartement?.secteur.adresse?.toString().includes(search) ||
-        new Date(item?.rentalDate)?.toLocaleDateString().includes(search))
-    );
+  // IMPORTANT: page=1 à chaque changement de recherche
+  React.useEffect(() => {
+    setPage(1);
+  }, [searchTerm]);
+
+  const { data: paged, isLoading, error } = useRentalsBySecteurPaged({
+    secteurId: param?.id,
+    page,
+    limit,
+    search: searchTerm,
   });
+
+  // OPTIMISATION: recherche gérée côté backend => pas de filtre côté front
+  const filteredRental = paged?.items || [];
 
   return (
     <Row>
@@ -45,7 +49,7 @@ export default function SecteurReservationListe() {
                     Nombre:{' '}
                     <span className='badge bg-warning'>
                       {' '}
-                      {filteredRental?.length}{' '}
+                      {paged?.total || 0}{' '}
                     </span>
                   </p>
                 </Col>
@@ -74,6 +78,14 @@ export default function SecteurReservationListe() {
                 </div>
               )}
               {isLoading && <LoadingSpiner />}
+
+              {/* OPTIMISATION UX: pagination toujours visible en haut */}
+              <PaginationControls
+                page={page}
+                totalPages={paged?.totalPages || 1}
+                onPageChange={setPage}
+                wrapperClassName='mb-3 mt-2'
+              />
 
               <div
                 className='table-responsive table-card rs-table-scroll mt-3'

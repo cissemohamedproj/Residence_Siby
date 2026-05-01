@@ -78,6 +78,33 @@ export const useAppartementsBySecteur = (secteurId) =>
     staleTime: 1000 * 60 * 2,
   });
 
+// ------------------------------------------------------------
+// OPTIMISATION (/secteur/:id): appartements paginés + recherche (server-side)
+// ------------------------------------------------------------
+export const useAppartementsBySecteurPaged = ({
+  secteurId,
+  page = 1,
+  limit = 20,
+  search = '',
+}) =>
+  useQuery({
+    queryKey: [
+      'appartements',
+      'bySecteur',
+      'paged',
+      { secteurId, page, limit, search },
+    ],
+    queryFn: () =>
+      api
+        .get(`/appartements/bySecteur/${secteurId}/paged`, {
+          params: { page, limit, search },
+        })
+        .then((res) => res.data),
+    enabled: Boolean(secteurId),
+    keepPreviousData: true,
+    staleTime: 1000 * 30,
+  });
+
 // Obtenir une Appartement
 export const useOneAppartement = (id) =>
   useQuery({
