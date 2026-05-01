@@ -3,6 +3,7 @@ const Comission = require('../models/ComissionModel');
 const Appartement = require('../models/AppartementModel');
 const Contrat = require('../models/ContratModel');
 const Rental = require('../models/RentalModel');
+const mongoose = require('mongoose');
 
 // Enregistrer un paiement
 exports.createPaiement = async (req, res) => {
@@ -118,6 +119,169 @@ exports.getPaiementsBySecteur = async (req, res) => {
       .sort({ paiementDate: -1 });
 
     return res.status(200).json(paiements);
+  } catch (err) {
+    console.log(err);
+    return res.status(400).json({ status: 'error', message: err.message });
+  }
+};
+
+// ------------------------------------------------------------
+// OPTIMISATION (secteur/:id): paiements CONTRAT paginés + recherche (server-side)
+// ------------------------------------------------------------
+// Contexte: le tableau "ContratPaiements" utilise uniquement `paiement.contrat.*`.
+// Objectif: éviter de charger tous les paiements du secteur et calculer les totaux.
+//
+// Réponse:
+// { items, total, page, limit, totalPages, sumTotalAmount, sumTotalPaye, sumTotalReliqua }
+exports.getPaiementsContratBySecteurPaged = async (req, res) => {
+  try {
+    const secteurId = req.params.id;
+    const page = Math.max(parseInt(req.query.page || '1', 10), 1);
+    const limit = Math.min(Math.max(parseInt(req.query.limit || '20', 10), 1), 100);
+    const searchRaw = String(req.query.search || '').trim();
+
+    const pipeline = [
+      // Join contrat
+      {
+        $lookup: {
+          from: 'contrats',
+          localField: 'contrat',
+          foreignField: '_id',
+          as: 'contratDoc',
+        },
+      },
+      { $unwind: { path: '$contratDoc', preserveNullAndEmptyArrays: false } },
+      // Join client (contrat)
+      {
+        $lookup: {
+          from: 'clients',
+          localField: 'contratDoc.client',
+          foreignField: '_id',
+          as: 'contratClientDoc',
+        },
+      },
+      { $unwind: { path: '$contratClientDoc', preserveNullAndEmptyArrays: true } },
+      // Join appartement (contrat)
+      {
+        $lookup: {
+          from: 'appartements',
+          localField: 'contratDoc.appartement',
+          foreignField: '_id',
+          as: 'contratAppartementDoc',
+        },
+      },
+      { $unwind: { path: '$contratAppartementDoc', preserveNullAndEmptyArrays: true } },
+      // Join secteur (contrat)
+      {
+        $lookup: {
+          from: 'secteurs',
+          localField: 'contratAppartementDoc.secteur',
+          foreignField: '_id',
+          as: 'contratSecteurDoc',
+        },
+      },
+      { $unwind: { path: '$contratSecteurDoc', preserveNullAndEmptyArrays: true } },
+      // Filtre secteur
+      { $match: { 'contratSecteurDoc._id': new mongoose.Types.ObjectId(secteurId) } },
+      {
+        $addFields: {
+          paiementDateStr: {
+            $dateToString: { format: '%d/%m/%Y', date: '$paiementDate' },
+          },
+        },
+      },
+    ];
+
+    if (searchRaw) {
+      pipeline.push({
+        $match: {
+          $or: [
+            { paiementDateStr: { $regex: searchRaw, $options: 'i' } },
+            { 'contratClientDoc.firstName': { $regex: searchRaw, $options: 'i' } },
+            { 'contratClientDoc.lastName': { $regex: searchRaw, $options: 'i' } },
+            {
+              $expr: {
+                $regexMatch: {
+                  input: { $toString: '$contratClientDoc.phoneNumber' },
+                  regex: searchRaw,
+                  options: 'i',
+                },
+              },
+            },
+            {
+              $expr: {
+                $regexMatch: {
+                  input: { $toString: '$totalPaye' },
+                  regex: searchRaw,
+                  options: 'i',
+                },
+              },
+            },
+          ],
+        },
+      });
+    }
+
+    pipeline.push(
+      { $sort: { paiementDate: -1 } },
+      // Forme compatible front: paiement.contrat.client, paiement.contrat.appartement.secteur
+      {
+        $addFields: {
+          contrat: {
+            $mergeObjects: [
+              '$contratDoc',
+              {
+                client: '$contratClientDoc',
+                appartement: {
+                  $mergeObjects: [
+                    '$contratAppartementDoc',
+                    { secteur: '$contratSecteurDoc' },
+                  ],
+                },
+              },
+            ],
+          },
+        },
+      },
+      { $unset: ['contratDoc', 'contratClientDoc', 'contratAppartementDoc', 'contratSecteurDoc', 'paiementDateStr'] },
+      {
+        $facet: {
+          meta: [{ $count: 'total' }],
+          items: [{ $skip: (page - 1) * limit }, { $limit: limit }],
+          totals: [
+            {
+              $group: {
+                _id: null,
+                sumTotalAmount: { $sum: '$contrat.totalAmount' },
+                sumTotalPaye: { $sum: '$totalPaye' },
+              },
+            },
+            {
+              $addFields: {
+                sumTotalReliqua: { $subtract: ['$sumTotalAmount', '$sumTotalPaye'] },
+              },
+            },
+          ],
+        },
+      }
+    );
+
+    const result = await Paiement.aggregate(pipeline);
+    const total = result?.[0]?.meta?.[0]?.total || 0;
+    const items = result?.[0]?.items || [];
+    const totalPages = Math.max(Math.ceil(total / limit), 1);
+    const totals = result?.[0]?.totals?.[0] || {};
+
+    return res.status(200).json({
+      items,
+      total,
+      page,
+      limit,
+      totalPages,
+      sumTotalAmount: totals?.sumTotalAmount || 0,
+      sumTotalPaye: totals?.sumTotalPaye || 0,
+      sumTotalReliqua: totals?.sumTotalReliqua || 0,
+    });
   } catch (err) {
     console.log(err);
     return res.status(400).json({ status: 'error', message: err.message });

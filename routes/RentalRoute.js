@@ -20,6 +20,11 @@ router.get('/getAllRentals', rentalController.getAllRental);
 router.get('/bySecteur/:id', rentalController.getRentalsBySecteur);
 
 // ------------------------------------------------------------
+// OPTIMISATION (/secteur/:id): rentals paginés + recherche
+// ------------------------------------------------------------
+router.get('/bySecteur/:id/paged', rentalController.getRentalsBySecteurPaged);
+
+// ------------------------------------------------------------
 // OPTIMISATION (reservations liste): pagination + recherche (server-side)
 // ------------------------------------------------------------
 router.get('/byClient/:id/paged', rentalController.getRentalsByClientPaged);

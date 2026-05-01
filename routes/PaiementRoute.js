@@ -20,6 +20,14 @@ router.get('/getAllPaiements', paiementController.getAllPaiements);
 router.get('/bySecteur/:id', paiementController.getPaiementsBySecteur);
 
 // ------------------------------------------------------------
+// OPTIMISATION (/secteur/:id): paiements CONTRAT paginés + recherche
+// ------------------------------------------------------------
+router.get(
+  '/bySecteur/:id/contrats/paged',
+  paiementController.getPaiementsContratBySecteurPaged
+);
+
+// ------------------------------------------------------------
 // OPTIMISATION (paiements): pagination + recherche (server-side)
 // ------------------------------------------------------------
 router.get('/paged', paiementController.getPaiementsPaged);

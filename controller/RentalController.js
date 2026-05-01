@@ -314,6 +314,113 @@ exports.getRentalsBySecteur = async (req, res) => {
 };
 
 // ------------------------------------------------------------
+// OPTIMISATION (secteur/:id): reservations paginées + recherche (server-side)
+// ------------------------------------------------------------
+// Objectif: pagination + recherche sur le tableau "Reservations" de secteur/:id.
+// Réponse: { items, total, page, limit, totalPages }
+exports.getRentalsBySecteurPaged = async (req, res) => {
+  try {
+    const secteurId = req.params.id;
+    const page = Math.max(parseInt(req.query.page || '1', 10), 1);
+    const limit = Math.min(Math.max(parseInt(req.query.limit || '20', 10), 1), 100);
+    const searchRaw = String(req.query.search || '').trim();
+
+    const pipeline = [
+      // Join client
+      {
+        $lookup: {
+          from: 'clients',
+          localField: 'client',
+          foreignField: '_id',
+          as: 'clientDoc',
+        },
+      },
+      { $unwind: { path: '$clientDoc', preserveNullAndEmptyArrays: true } },
+      // Join appartement
+      {
+        $lookup: {
+          from: 'appartements',
+          localField: 'appartement',
+          foreignField: '_id',
+          as: 'appartementDoc',
+        },
+      },
+      { $unwind: { path: '$appartementDoc', preserveNullAndEmptyArrays: true } },
+      // Join secteur
+      {
+        $lookup: {
+          from: 'secteurs',
+          localField: 'appartementDoc.secteur',
+          foreignField: '_id',
+          as: 'secteurDoc',
+        },
+      },
+      { $unwind: { path: '$secteurDoc', preserveNullAndEmptyArrays: true } },
+      // Filtre secteur
+      { $match: { 'secteurDoc._id': new mongoose.Types.ObjectId(secteurId) } },
+      {
+        $addFields: {
+          rentalDateStr: {
+            $dateToString: { format: '%d/%m/%Y', date: '$rentalDate' },
+          },
+        },
+      },
+    ];
+
+    if (searchRaw) {
+      pipeline.push({
+        $match: {
+          $or: [
+            { 'clientDoc.firstName': { $regex: searchRaw, $options: 'i' } },
+            { 'clientDoc.lastName': { $regex: searchRaw, $options: 'i' } },
+            {
+              $expr: {
+                $regexMatch: {
+                  input: { $toString: '$clientDoc.phoneNumber' },
+                  regex: searchRaw,
+                  options: 'i',
+                },
+              },
+            },
+            { 'secteurDoc.adresse': { $regex: searchRaw, $options: 'i' } },
+            { rentalDateStr: { $regex: searchRaw, $options: 'i' } },
+          ],
+        },
+      });
+    }
+
+    pipeline.push(
+      { $sort: { rentalDate: -1 } },
+      {
+        $addFields: {
+          client: '$clientDoc',
+          appartement: {
+            $mergeObjects: ['$appartementDoc', { secteur: '$secteurDoc' }],
+          },
+        },
+      },
+      { $unset: ['clientDoc', 'appartementDoc', 'secteurDoc', 'rentalDateStr'] },
+      {
+        $facet: {
+          meta: [{ $count: 'total' }],
+          items: [{ $skip: (page - 1) * limit }, { $limit: limit }],
+        },
+      }
+    );
+
+    const result = await Rental.aggregate(pipeline);
+    const total = result?.[0]?.meta?.[0]?.total || 0;
+    const items = result?.[0]?.items || [];
+    const totalPages = Math.max(Math.ceil(total / limit), 1);
+
+    return res.status(200).json({ items, total, page, limit, totalPages });
+  } catch (error) {
+    console.log(error);
+    return res.status(404).json({ message: error?.message || error });
+  }
+};
+
+// ------------------------------------------------------------
 // OPTIMISATION (reservations liste): pagination + recherche (server-side)
 // ------------------------------------------------------------
 // Objectif: éviter getAllRentals + filtre côté front sur la page "Reservations".

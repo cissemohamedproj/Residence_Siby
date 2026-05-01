@@ -1,5 +1,6 @@
 const Appartement = require('../models/AppartementModel');
 const Contrat = require('../models/ContratModel');
+const mongoose = require('mongoose');
 
 
 // Enregistrer un Produit
@@ -166,6 +167,77 @@ exports.getAppartementsBySecteur = async (req, res) => {
       .sort({ appartementNumber: 1 });
 
     return res.status(200).json(appartements);
+  } catch (err) {
+    return res.status(400).json({ status: 'error', message: err.message });
+  }
+};
+
+// ------------------------------------------------------------
+// OPTIMISATION (secteur/:id): appartements paginés + recherche (server-side)
+// ------------------------------------------------------------
+// Objectif: pagination + recherche sur le tableau "Appartements" de secteur/:id
+// sans charger toute la liste.
+// Réponse: { items, total, page, limit, totalPages }
+exports.getAppartementsBySecteurPaged = async (req, res) => {
+  try {
+    const secteurId = req.params.id;
+    const page = Math.max(parseInt(req.query.page || '1', 10), 1);
+    const limit = Math.min(Math.max(parseInt(req.query.limit || '20', 10), 1), 200);
+    const searchRaw = String(req.query.search || '').trim();
+
+    // IMPORTANT: `secteur` est un ObjectId en base, donc on match avec ObjectId
+    const match = { secteur: new mongoose.Types.ObjectId(secteurId) };
+
+    // Recherche proche de l'UI (nom/numéro). L'adresse secteur est identique dans ce contexte.
+    const pipeline = [{ $match: match }];
+
+    if (searchRaw) {
+      pipeline.push({
+        $match: {
+          $or: [
+            { name: { $regex: searchRaw, $options: 'i' } },
+            {
+              $expr: {
+                $regexMatch: {
+                  input: { $toString: '$appartementNumber' },
+                  regex: searchRaw,
+                  options: 'i',
+                },
+              },
+            },
+          ],
+        },
+      });
+    }
+
+    pipeline.push(
+      { $sort: { appartementNumber: 1 } },
+      // Pour conserver la logique d'affichage, on renvoie `secteur` peuplé.
+      {
+        $lookup: {
+          from: 'secteurs',
+          localField: 'secteur',
+          foreignField: '_id',
+          as: 'secteurDoc',
+        },
+      },
+      { $unwind: { path: '$secteurDoc', preserveNullAndEmptyArrays: true } },
+      { $addFields: { secteur: '$secteurDoc' } },
+      { $unset: 'secteurDoc' },
+      {
+        $facet: {
+          meta: [{ $count: 'total' }],
+          items: [{ $skip: (page - 1) * limit }, { $limit: limit }],
+        },
+      }
+    );
+
+    const result = await Appartement.aggregate(pipeline);
+    const total = result?.[0]?.meta?.[0]?.total || 0;
+    const items = result?.[0]?.items || [];
+    const totalPages = Math.max(Math.ceil(total / limit), 1);
+
+    return res.status(200).json({ items, total, page, limit, totalPages });
   } catch (err) {
     return res.status(400).json({ status: 'error', message: err.message });
   }

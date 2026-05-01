@@ -20,6 +20,11 @@ router.get('/getAllAppartements',contratController.refrechContrats ,appartement.
 router.get('/bySecteur/:id', appartement.getAppartementsBySecteur);
 
 // ------------------------------------------------------------
+// OPTIMISATION (/secteur/:id): appartements paginés + recherche
+// ------------------------------------------------------------
+router.get('/bySecteur/:id/paged', appartement.getAppartementsBySecteurPaged);
+
+// ------------------------------------------------------------
 // OPTIMISATION (/home): stats légères (totaux) par secteur
 // ------------------------------------------------------------
 // Objectif: permettre au front d'afficher des compteurs sans

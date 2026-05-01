@@ -29,6 +29,11 @@ router.get('/getAllContrats',contratController.refrechContrats ,contratControlle
 router.get('/bySecteur/:id', contratController.getContratsBySecteur);
 
 // ------------------------------------------------------------
+// OPTIMISATION (/secteur/:id): contrats paginés + recherche
+// ------------------------------------------------------------
+router.get('/bySecteur/:id/paged', contratController.getContratsBySecteurPaged);
+
+// ------------------------------------------------------------
 // OPTIMISATION (dashboard): total contrats (count only)
 // ------------------------------------------------------------
 router.get('/count', contratController.getContratCount);
