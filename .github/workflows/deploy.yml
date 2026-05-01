@@ -3,7 +3,7 @@ name: Deploy Backend To VPS
 on:
   push:
     branches:
-      - master
+      - v2_backend
 
 jobs:
   deploy:
@@ -27,15 +27,15 @@ jobs:
             cd /home/mohamed/apps/residence_siby/backend || exit 1
 
             # Pull latest changes
-            git reset --hard origin/master
             git config pull.rebase false
-            git pull origin master
+            git reset --hard origin/v2_backend || exit 1
+            git pull origin v2_backend || exit 1
 
             echo "Pull was successful, installing dependencies..."
             npm install
 
             echo "Dependencies installed, Restart backend (PM2)..."
-            pm2 restart backend_residence
+            pm2 restart backend_residence || exit 1
 
 
             echo "Deployment completed successfully!"
