@@ -20,7 +20,7 @@ import LoadingSpiner from '../components/LoadingSpiner';
 import { capitalizeWords, formatPrice } from '../components/capitalizeFunction';
 import { deleteButton } from '../components/AlerteModal';
 import { useNavigate } from 'react-router-dom';
-import { useAllAppartement } from '../../Api/queriesAppartement';
+import { useAppartementStatsBySecteur } from '../../Api/queriesAppartement';
 
 export default function Secteur() {
   const { auth, logout } = useContext(AuthContext);
@@ -36,21 +36,26 @@ export default function Secteur() {
   } = useAllSecteur();
   const { mutate: deleteSecteur } = useDeleteSecteur();
 
-  const { data: appartementData } = useAllAppartement();
+  // OPTIMISATION: on ne charge plus tous les appartements sur /home.
+  // On récupère uniquement les compteurs (total / libres) par secteur.
+  const { data: appartementStats } = useAppartementStatsBySecteur();
 
-  const appartements = (secteur, disponibility) => {
-    return appartementData?.filter((item) => {
-      return item?.secteur?._id === secteur?._id;
-    })?.length;
+  // OPTIMISATION: lookup O(1) au lieu de filter() sur toute la collection.
+  const statsMap = (appartementStats || []).reduce((acc, row) => {
+    acc[String(row.secteur)] = row;
+    return acc;
+  }, {});
+
+  const appartements = (secteur) => {
+    return statsMap?.[String(secteur?._id)]?.total || 0;
   };
 
   const availableAppartements = (secteur, disponibility) => {
-    return appartementData?.filter((item) => {
-      return (
-        item?.secteur?._id === secteur?._id &&
-        item?.isAvailable === disponibility
-      );
-    })?.length;
+    // NOTE: on garde la signature pour ne pas casser la logique existante.
+    // Ici, "disponibility" est attendu (true/false) mais pour /home,
+    // l'affichage utilise "true" (Libre).
+    if (disponibility !== true) return 0;
+    return statsMap?.[String(secteur?._id)]?.available || 0;
   };
 
   function tog_form_modal() {

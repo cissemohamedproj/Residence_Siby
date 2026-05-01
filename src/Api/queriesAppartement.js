@@ -28,6 +28,19 @@ export const useAllAppartement = () =>
       api.get('/appartements/getAllAppartements').then((res) => res.data),
   });
 
+// ------------------------------------------------------------
+// OPTIMISATION (/home): stats légères par secteur
+// ------------------------------------------------------------
+// Objectif: sur la page /home (Secteurs), on a surtout besoin des
+// compteurs (total / libre) par secteur, sans charger tous les appartements.
+export const useAppartementStatsBySecteur = () =>
+  useQuery({
+    queryKey: ['appartements', 'statsBySecteur'],
+    queryFn: () =>
+      api.get('/appartements/statsBySecteur').then((res) => res.data),
+    staleTime: 1000 * 60 * 2, // cache court: les compteurs changent souvent
+  });
+
 // Obtenir une Appartement
 export const useOneAppartement = (id) =>
   useQuery({
