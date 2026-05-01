@@ -28,7 +28,7 @@ jobs:
 
             # Pull latest changes
             git config pull.rebase false
-            git reset --hard origin/v2_backend || exit 1
+            git reset --hard || exit 1
             git pull origin v2_backend || exit 1
 
             echo "Pull was successful, installing dependencies..."
