@@ -28,6 +28,7 @@ jobs:
 
             # Pull latest changes
             git reset --hard
+            git config pull.rebase false
             git pull origin master
 
             echo "Pull was successful, installing dependencies..."
