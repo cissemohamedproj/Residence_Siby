@@ -27,10 +27,9 @@ jobs:
             cd /home/mohamed/apps/residence_siby/frontend || exit 1
 
             # Pull latest changes
-            git reset --hard origin/v2_frontend || exit 1
+            git reset --hard HEAD || exit 1
             git config pull.rebase false
-            git reset --hard  || exit 1
-            git pull origin v2_frontend
+            git pull origin v2_frontend || exit 1
 
             echo "Pull was successful, installing dependencies..."
             npm install
