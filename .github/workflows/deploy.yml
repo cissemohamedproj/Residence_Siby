@@ -29,7 +29,8 @@ jobs:
             # Pull latest changes
             git reset --hard HEAD || exit 1
             git config pull.rebase false
-            git pull origin v2_frontend || exit 1
+            git reset --hard origin/v2_frontend
+            git pull origin/v2_frontend || exit 1
 
             echo "Pull was successful, installing dependencies..."
             npm install
