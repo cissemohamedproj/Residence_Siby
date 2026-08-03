@@ -61,7 +61,7 @@ const corsOptions = {
 };
 
 // CORS UNIQUEMENT pour l’API
-app.use('/residence_siby/api', cors(corsOptions));
+app.use('/residence_siby/api/', cors(corsOptions));
 // Preflight pour toutes les routes /api/... (regex => pas de parsing path-to-regexp)
 app.options(/^\/api\/.*$/, cors(corsOptions));
 app.use(express.json()); // Parser les requêtes avec JSON
