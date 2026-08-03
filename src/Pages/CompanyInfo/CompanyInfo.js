@@ -26,7 +26,7 @@ const companyServices1 =
   'Vente des: Matelats - Carreaux - Couches de Bébé etc...';
 const companyServices2 = 'Location des Voitures et Appartements meublés';
 
-const companyOwnerName = 'Mr Mahamadou Simaga';
+const companyOwnerName = 'Groupe Siby Residence';
 
 const companyAdresse = 'Boulkassoumbougou rue MONTANA';
 
