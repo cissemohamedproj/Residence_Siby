@@ -9,8 +9,12 @@ export const capitalizeWords = (str) => {
 
 export const formatPhoneNumber = (number) => {
   if (!number) return '';
-  const digits = String(number).replace(/\D/g, '').slice(0, 8); // max 8 chiffres
+  // formatez seulement en mettant espace entre les chiffres et en ajoutant un tiret après chaque 2 chiffres sans limite de longueur
+  const digits = String(number).replace(/\D/g, ''); // supprime tous les caractères non numériques
   return digits.replace(/(\d{2})(?=\d)/g, '$1-').replace(/-$/, '');
+  
+  // const digits = String(number).replace(/\D/g, '').slice(0, 8); // max 8 chiffres
+  // return digits.replace(/(\d{2})(?=\d)/g, '$1-').replace(/-$/, '');
 };
 
 export const formatPrice = (number) => {
