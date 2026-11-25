@@ -1,3 +1,4 @@
+
 name: Deploy Frontend To VPS
 
 on:
@@ -5,13 +6,16 @@ on:
     branches:
       - v2_frontend
 
+# Évite plusieurs déploiements simultanés
+concurrency:
+  group: residence-siby-frontend
+  cancel-in-progress: true
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
 
+    steps:
       - name: Deploy to VPS via SSH
         uses: appleboy/ssh-action@v1.0.3
 
@@ -19,27 +23,78 @@ jobs:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
+          script_stop: true
+
           script: |
+            set -e
 
             echo "Starting deployment..."
 
-            #Go to project folder
-            cd /home/mohamed/apps/residence_siby/frontend || exit 1
+            cd /home/mohamed/apps/residence_siby/frontend
 
-            # Pull latest changes
-            git reset --hard HEAD || exit 1
-            git config pull.rebase false
-            # git merge --abort || exit 1
-            git checkout v2_frontend || exit 1
-            git pull origin v2_frontend || exit 1
+            # Récupérer les dernières modifications
+            git fetch origin v2_frontend
 
-            echo "Pull was successful, installing dependencies..."
-            npm ci || exit 1
-            npm run build || exit 1
+            # Synchroniser exactement avec la branche distante
+            git reset --hard origin/v2_frontend
 
-            echo "Dependencies installed, Restart frontend (Nginx)..."
-            sudo systemctl restart nginx
-            sudo nginx -t
+            echo "Installing dependencies if necessary..."
 
+            # Installer uniquement si package-lock.json a changé
+            if git diff HEAD@{1} HEAD -- package-lock.json | grep -q .; then
+                npm ci
+            fi
+
+            echo "Building frontend..."
+
+            npm run build
 
             echo "Deployment completed successfully!"
+
+
+
+# name: Deploy Frontend To VPS
+
+# on:
+#   push:
+#     branches:
+#       - v2_frontend
+
+# jobs:
+#   deploy:
+#     runs-on: ubuntu-latest
+#     steps:
+#       - name: Checkout code
+#         uses: actions/checkout@v4
+
+#       - name: Deploy to VPS via SSH
+#         uses: appleboy/ssh-action@v1.0.3
+
+#         with:
+#           host: ${{ secrets.VPS_HOST }}
+#           username: ${{ secrets.VPS_USER }}
+#           key: ${{ secrets.VPS_SSH_KEY }}
+#           script: |
+
+#             echo "Starting deployment..."
+
+#             #Go to project folder
+#             cd /home/mohamed/apps/residence_siby/frontend || exit 1
+
+#             # Pull latest changes
+#             git reset --hard HEAD || exit 1
+#             git config pull.rebase false
+#             # git merge --abort || exit 1
+#             git checkout v2_frontend || exit 1
+#             git pull origin v2_frontend || exit 1
+
+#             echo "Pull was successful, installing dependencies..."
+#             npm ci || exit 1
+#             npm run build || exit 1
+
+#             echo "Dependencies installed, Restart frontend (Nginx)..."
+#             sudo systemctl restart nginx
+#             sudo nginx -t
+
+
+#             echo "Deployment completed successfully!"
