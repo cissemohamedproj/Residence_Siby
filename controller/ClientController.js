@@ -1,36 +1,38 @@
-const mongoose = require('mongoose');
-const Client = require('../models/ClientModel');
-const Contrat = require('../models/ContratModel');
-const Rental = require('../models/RentalModel');
-const Paiement = require('../models/PaiementModel')
-const Depense = require('../models/DepenseModel')
-const Appartement = require('../models/AppartementModel')
-const textValidation = require('./regexValidation');
+const mongoose = require("mongoose");
+const Client = require("../models/ClientModel");
+const Contrat = require("../models/ContratModel");
+const Rental = require("../models/RentalModel");
+const Paiement = require("../models/PaiementModel");
+const Depense = require("../models/DepenseModel");
+const Appartement = require("../models/AppartementModel");
+const Comission = require("../models/ComissionModel");
+const textValidation = require("./regexValidation");
 
 // Créer un Fournisseur
 exports.createClient = async (req, res) => {
   try {
-    const { firstName, lastName, ...resOfData } =
-      req.body;
+    const { firstName, lastName, ...resOfData } = req.body;
     // Changer les données en miniscule
     const lowerFirstName = firstName.toLowerCase();
     const lowerLastName = lastName.toLowerCase();
 
     if (
       !textValidation.stringValidator(lowerFirstName) ||
-      !textValidation.stringValidator(lowerLastName) 
+      !textValidation.stringValidator(lowerLastName)
     ) {
       return res.status(400).json({
-        status: 'error',
-        message: 'Vous avez mal saisie les données',
+        status: "error",
+        message: "Vous avez mal saisie les données",
       });
     }
 
-    const existingClient = await Client.findOne({phoneNumber: req.body.phoneNumber}); 
+    const existingClient = await Client.findOne({
+      phoneNumber: req.body.phoneNumber,
+    });
 
-    if(existingClient){
+    if (existingClient) {
       return res.status(400).json({
-        status: 'error',
+        status: "error",
         message: "Ce Numéro de Téléphone existe déjà ",
       });
     }
@@ -45,7 +47,7 @@ exports.createClient = async (req, res) => {
     return res.status(201).json(newClient);
   } catch (e) {
     return res.status(409).json({
-      status: 'Email existe',
+      status: "Email existe",
       message: e.message,
     });
     // }
@@ -58,27 +60,31 @@ exports.updateClient = async (req, res) => {
     const {
       firstName,
       lastName,
-     
+
       ...resOfData
     } = req.body;
     // Changer les données en miniscule
     const lowerFirstName = firstName.toLowerCase();
     const lowerLastName = lastName.toLowerCase();
-    
+
     if (
       !textValidation.stringValidator(lowerFirstName) ||
-      !textValidation.stringValidator(lowerLastName)     ) {
+      !textValidation.stringValidator(lowerLastName)
+    ) {
       return res.status(400).json({
-        status: 'error',
-        message: 'Vous avez mal saisie les données',
+        status: "error",
+        message: "Vous avez mal saisie les données",
       });
     }
 
-    const existingClient = await Client.findOne({phoneNumber: req.body.phoneNumber, _id:{$ne:req.params.id}}); 
+    const existingClient = await Client.findOne({
+      phoneNumber: req.body.phoneNumber,
+      _id: { $ne: req.params.id },
+    });
 
-    if(existingClient){
+    if (existingClient) {
       return res.status(400).json({
-        status: 'error',
+        status: "error",
         message: "Ce Numéro de Téléphone existe déjà ",
       });
     }
@@ -88,20 +94,20 @@ exports.updateClient = async (req, res) => {
       {
         firstName: lowerFirstName,
         lastName: lowerLastName,
-    
+
         ...resOfData,
       },
       {
         new: true,
         runValidators: true,
-        context: 'query',
-      }
+        context: "query",
+      },
     );
-  
+
     return res.status(200).json(updated);
   } catch (err) {
-    console.log(err)
-    return res.status(400).json({ status: 'error', message: err.message });
+    console.log(err);
+    return res.status(400).json({ status: "error", message: err.message });
   }
 };
 
@@ -109,7 +115,7 @@ exports.updateClient = async (req, res) => {
 exports.getAllClients = async (req, res) => {
   try {
     const clients = await Client.find()
-      .populate('user')
+      .populate("user")
       .sort({ createdAt: -1 });
     return res.status(200).json(clients);
   } catch (error) {
@@ -146,18 +152,21 @@ exports.getClientCount = async (req, res) => {
 // NB: on ajoute aussi `contractCount` par client (utilisé dans le badge "Contrat").
 exports.getClientsPaged = async (req, res) => {
   try {
-    const page = Math.max(parseInt(req.query.page || '1', 10), 1);
-    const limit = Math.min(Math.max(parseInt(req.query.limit || '20', 10), 1), 200);
-    const searchRaw = String(req.query.search || '').trim();
+    const page = Math.max(parseInt(req.query.page || "1", 10), 1);
+    const limit = Math.min(
+      Math.max(parseInt(req.query.limit || "20", 10), 1),
+      200,
+    );
+    const searchRaw = String(req.query.search || "").trim();
 
     // Recherche simple (nom/prénom/téléphone). On garde une logique proche du front.
     const matchStage = searchRaw
       ? {
           $or: [
-            { firstName: { $regex: searchRaw, $options: 'i' } },
-            { lastName: { $regex: searchRaw, $options: 'i' } },
-            { phoneNumber: { $regex: searchRaw, $options: 'i' } },
-            { pieceNumber: { $regex: searchRaw, $options: 'i' } },
+            { firstName: { $regex: searchRaw, $options: "i" } },
+            { lastName: { $regex: searchRaw, $options: "i" } },
+            { phoneNumber: { $regex: searchRaw, $options: "i" } },
+            { pieceNumber: { $regex: searchRaw, $options: "i" } },
           ],
         }
       : {};
@@ -168,21 +177,21 @@ exports.getClientsPaged = async (req, res) => {
       // Join contrats pour calculer le nombre de contrats par client (badge)
       {
         $lookup: {
-          from: 'contrats',
-          localField: '_id',
-          foreignField: 'client',
-          as: 'contrats',
+          from: "contrats",
+          localField: "_id",
+          foreignField: "client",
+          as: "contrats",
         },
       },
       {
         $addFields: {
-          contractCount: { $size: '$contrats' },
+          contractCount: { $size: "$contrats" },
         },
       },
       { $project: { contrats: 0 } },
       {
         $facet: {
-          meta: [{ $count: 'total' }],
+          meta: [{ $count: "total" }],
           items: [{ $skip: (page - 1) * limit }, { $limit: limit }],
         },
       },
@@ -202,110 +211,146 @@ exports.getClientsPaged = async (req, res) => {
 // Récupérer un Client par ID
 exports.getClient = async (req, res) => {
   try {
-    const client = await Client.findById(req.params.id)
-    .populate('user');
+    const client = await Client.findById(req.params.id).populate("user");
     if (!client)
       return res
         .status(404)
-        .json({ status: 'error', message: 'Client non trouvé' });
+        .json({ status: "error", message: "Client non trouvé" });
 
     res.status(200).json(client);
   } catch (err) {
-    return res.status(400).json({ status: 'error', message: err.message });
+    return res.status(400).json({ status: "error", message: err.message });
   }
 };
 
 // Supprimer un Client
 exports.deleteClient = async (req, res) => {
-  const session = await mongoose.startSession()
+  const session = await mongoose.startSession();
   session.startTransaction();
   try {
-
     // Avant de Supprimer le CLIENT on vérrifie si il n'y pas des CONTRATS lié à ce CLIENT
-    const clientContrat = await Contrat.find({client:req.params.id}).session(session);
+    const clientContrat = await Contrat.findOne({ client: req.params.id }).session(
+      session,
+    );
 
-    if(!clientContrat){
-      await session.abortTransaction()
+    if (clientContrat) {
+      await session.abortTransaction();
       session.endSession();
-      return res.status(404).json({message: "Aucun contrat disponible"})
+      return res
+        .status(400)
+        .json({
+          status: "error",
+          message:
+            "Impossible de supprimer ce client car il est lié à un ou plusieurs contrats.",
+        });
     }
 
-    if(clientContrat){
-    
-    // SI il y'a des CONTRAT alors on Supprime tous les CONTRAT liés
-    for(const cont of clientContrat){
+    // if (clientContrat) {
+    //   // SI il y'a des CONTRAT alors on Supprime tous les CONTRAT liés
+    //   for (const cont of clientContrat) {
+    //     // On Vérifie dans la boucle si il n'y a pas des PAIEMENTS liés aux CONTRATS
+    //     const clientPaiem = await Paiement.find({ contrat: cont._id }).session(
+    //       session,
+    //     );
+    //     if (clientPaiem) {
+    //       // Si ce le cas alors on supprimer tous les PAIEMENTS liés
+    //       for (const paie of clientPaiem) {
+    //         await Paiement.findByIdAndDelete(paie._id, { session });
+    //       }
+    //     }
 
-      // On Vérifie dans la boucle si il n'y a pas des PAIEMENTS liés aux CONTRATS
-      const clientPaiem = await Paiement.find({contrat:cont._id}).session(session)
-      if(clientPaiem){
-      // Si ce le cas alors on supprimer tous les PAIEMENTS liés
-for(const paie of clientPaiem){
-  await Paiement.findByIdAndDelete(paie._id,{session})
-}
-      }
-    
+    //     // On met à jours la disponibilité de tous les APPARTEMENTS  lié aux CONTRAT
+    //     const apparts = await Appartement.find({
+    //       _id: cont.appartement,
+    //     }).session(session);
 
+    //     for (const app of apparts) {
+    //       await Appartement.findByIdAndUpdate(
+    //         app._id,
+    //         { isAvailable: true },
+    //         { session },
+    //       );
+    //     }
 
-// On met à jours la disponibilité de tous les APPARTEMENTS  lié aux CONTRAT
-const apparts = await Appartement.find({_id: cont.appartement}).session(session);
-
-
-for (const app of apparts){
-  await Appartement.findByIdAndUpdate(app._id,{isAvailable:true},{session})
-}
-
-
-// ensuite on supprime le CONTRAT
-await Contrat.findByIdAndDelete(cont._id,{session});
-
-}
-
-    }
+    //     // ensuite on supprime le CONTRAT
+    //     await Contrat.findByIdAndDelete(cont._id, { session });
+    //   }
+    // }
 
     // Suppression des Reservations
-    const rentals = await Rental.find({client: req.params.id}).session(session)
+    const rentals = await Rental.findOne({ client: req.params.id }).session(
+      session,
+    );
 
-    if(rentals){
-     for(const rent of rentals){
-
-      const rentalPaie = await Paiement.find({rental:rent._id}).session(session)
-      if(!rentalPaie){
-        await session.abortTransaction()
-        session.endSession()
-        return res.status(404).json({message: 'Erreur de suppression, paiement non trouvée'})
-      }
-    
-      for(const pai of rentalPaie){
-        await Paiement.findByIdAndDelete(pai._id,{session});
-      }
-
-      const rentalDepe = await Depense.find({rental:rent._id}).session(session)
-      if(rentalDepe){
-       for(const dep of rentalDepe){
-
-         await Depense.findByIdAndDelete(dep._id,{session});
-       }
-        
-      }
-     
-      await Rental.findByIdAndDelete(rent._id,{session});
-     }
+    if (rentals) {
+      await session.abortTransaction();
+      session.endSession();
+      return res
+        .status(400)
+        .json({
+          status: "error",
+          message:
+            "Impossible de supprimer ce client car il est lié à une ou plusieurs réservations.",
+        });
     }
 
-// Et pour finir on supprime le CLIENT
-    await Client.findByIdAndDelete(req.params.id, {session});
 
-await session.commitTransaction();
-session.endSession()
+    const comission = await Comission.findOne({ client: req.params.id }).session(session);
+    if (comission) {
+      await session.abortTransaction();
+      session.endSession();
+      return res
+        .status(400)
+        .json({
+          status: "error",
+          message:
+            "Impossible de supprimer ce client car il est lié à une ou plusieurs commissions.",
+        });
+    }
+
+      // for (const rent of rentals) {
+      //   const rentalPaie = await Paiement.find({ rental: rent._id }).session(
+      //     session,
+      //   );
+      //   if (!rentalPaie) {
+      //     await session.abortTransaction();
+      //     session.endSession();
+      //     return res
+      //       .status(404)
+      //       .json({ message: "Erreur de suppression, paiement non trouvée" });
+      //   }
+
+      //   for (const pai of rentalPaie) {
+      //     await Paiement.findByIdAndDelete(pai._id, { session });
+      //   }
+
+      //   const rentalDepe = await Depense.find({ rental: rent._id }).session(
+      //     session,
+      //   );
+      //   if (rentalDepe) {
+      //     for (const dep of rentalDepe) {
+      //       await Depense.findByIdAndDelete(dep._id, { session });
+      //     }
+      //   }
+
+      //   await Rental.findByIdAndDelete(rent._id, { session });
+      // }
+    // }
+
+    // Et pour finir on supprime le CLIENT
+    await Client.findByIdAndDelete(req.params.id, { session });
+
+    await session.commitTransaction();
+    session.endSession();
 
     return res
       .status(200)
-      .json({ status: 'success', message: 'Client supprimé avec succès' });
+      .json({ status: "success", message: "Client supprimé avec succès" });
   } catch (err) {
-    console.log(err)
-    session.abortTransaction()
-    session.endSession()
-    return res.status(400).json({ status: 'error', message: err.message });
+    console.log(err);
+    session.abortTransaction();
+    session.endSession();
+    return res.status(400).json({ status: "error", message: err.message });
   }
 };
 
@@ -315,13 +360,13 @@ exports.deleteAllClients = async (req, res) => {
     await Client.deleteMany({}); // Supprime tous les documents
 
     return res.status(200).json({
-      status: 'success',
-      message: 'Tous les Clients ont été supprimés avec succès',
+      status: "success",
+      message: "Tous les Clients ont été supprimés avec succès",
     });
   } catch (e) {
     return res.status(500).json({
-      status: 'error',
-      message: 'Erreur lors de la suppression des Clients',
+      status: "error",
+      message: "Erreur lors de la suppression des Clients",
       error: e.message,
     });
   }

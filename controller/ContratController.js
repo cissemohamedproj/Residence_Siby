@@ -1,76 +1,80 @@
-const mongoose = require('mongoose');
-const Contrat = require('../models/ContratModel');
-const Appartement = require('../models/AppartementModel');
-const Paiement = require('../models/PaiementModel');
-const Rental = require('../models/RentalModel');
-const textValidation = require('./regexValidation');
+const mongoose = require("mongoose");
+const Contrat = require("../models/ContratModel");
+const Appartement = require("../models/AppartementModel");
+const Paiement = require("../models/PaiementModel");
+const Rental = require("../models/RentalModel");
+const textValidation = require("./regexValidation");
 
 // Ajouter un Contrat
 exports.createContrat = async (req, res) => {
   const session = await mongoose.startSession();
   session.startTransaction();
   try {
+    const startDate = new Date(req.body.startDate);
+    const endDate = new Date(req.body.endDate);
 
-    const startDate = new Date(req.body.startDate)
-    const endDate = new Date(req.body.endDate)
+    const existAppartement = await Appartement.findById(
+      req.body.appartement,
+    ).session(session);
 
-    const existAppartement = await Appartement.findById(req.body.appartement).session(session)
-
- 
-    if(existAppartement.isAvailable === false){
-   await   session.abortTransaction()
-      session.endSession()
-      return res.status(400).json({message: "Cette Appartement n'est pas disponible"})
+    if (existAppartement.isAvailable === false) {
+      await session.abortTransaction();
+      session.endSession();
+      return res
+        .status(400)
+        .json({ message: "Cette Appartement n'est pas disponible" });
     }
 
-     
-// ----------------------------------------------
-// ---------- RENTAL
-// ----------------------------------------------
-const existingRental = await Rental.findOne({
-  appartement: existAppartement._id,
-  $or:[
-    {
-      rentalDate: { $lte:endDate},
-      rentalEndDate: {$gte: startDate},
+    // ----------------------------------------------
+    // ---------- RENTAL
+    // ----------------------------------------------
+    const existingRental = await Rental.findOne({
+      appartement: existAppartement._id,
+      $or: [
+        {
+          rentalDate: { $lte: endDate },
+          rentalEndDate: { $gte: startDate },
+        },
+      ],
+    }).session(session);
+
+    if (existingRental && existingRental.statut === "en cours") {
+      await session.abortTransaction();
+      session.endSession();
+      return res
+        .status(400)
+        .json({
+          message: `Cette Appartement est reservée du: ${new Date(existingRental.rentalDate).toLocaleDateString("fr-Fr")} au  ${new Date(existingRental.rentalEndDate).toLocaleDateString("fr-Fr")}`,
+        });
     }
-  ]
-}).session(session);
 
-
-if(existingRental && existingRental.statut === 'en cours'){
-  await   session.abortTransaction()
-  session.endSession()
-  return res.status(400).json({message: `Cette Appartement est reservée du: ${new Date(existingRental.rentalDate).toLocaleDateString('fr-Fr')} au  ${new Date(existingRental.rentalEndDate).toLocaleDateString('fr-Fr')}`})
-}
-
-      const newContrat = await Contrat.create(
-        [{
-      
-      user: req.user.id,
-      ...req.body,
-    }],
-    {session},
-  );
-     // Mettre l'appartement en indisponible
-     await Appartement.findByIdAndUpdate(
-     existAppartement._id,
-      { isAvailable: false },
-      { new: true ,session}
+    const newContrat = await Contrat.create(
+      [
+        {
+          user: req.user.id,
+          ...req.body,
+        },
+      ],
+      { session },
     );
- 
-    await session.commitTransaction()
-    session.endSession()
+    // Mettre l'appartement en indisponible
+    await Appartement.findByIdAndUpdate(
+      existAppartement._id,
+      { isAvailable: false },
+      { new: true, session },
+    );
+
+    await session.commitTransaction();
+    session.endSession();
     return res.status(201).json(newContrat);
   } catch (e) {
-    console.log(e)
-   await session.abortTransaction()
-    session.endSession()
+    console.log(e);
+    await session.abortTransaction();
+    session.endSession();
     return res.status(409).json({
-      status: 'Erreur',
+      status: "Erreur",
       message: e.message,
     });
-    
   }
 };
 
@@ -81,15 +85,12 @@ exports.updateContrat = async (req, res) => {
   session.startTransaction();
 
   try {
+    const startDate = new Date(req.body.startDate);
+    const endDate = new Date(req.body.endDate);
 
-    const startDate = new Date(req.body.startDate)
-    const endDate = new Date(req.body.endDate)
-    
-
-
-// ----------------------------------------------
-// ---------- CONTRAT
-// ----------------------------------------------
+    // ----------------------------------------------
+    // ---------- CONTRAT
+    // ----------------------------------------------
     const oldContrat = await Contrat.findById(req.params.id).session(session);
     if (!oldContrat) {
       await session.abortTransaction();
@@ -97,52 +98,54 @@ exports.updateContrat = async (req, res) => {
       return res.status(404).json({ message: "Contrat non trouvé" });
     }
 
-    
-    const isDifferent =req.body.appartement.toString() !== oldContrat.appartement.toString() ;
-    
-if(isDifferent){
-    const existAppartement = await Appartement.findById(req.body.appartement).session(session);
+    const isDifferent =
+      req.body.appartement.toString() !== oldContrat.appartement.toString();
 
-    if (!existAppartement) {
-      await session.abortTransaction();
-      session.endSession();
-      return res.status(404).json({ message: "Appartement non trouvé" });
-    }
+    if (isDifferent) {
+      const existAppartement = await Appartement.findById(
+        req.body.appartement,
+      ).session(session);
 
-    // Vérification si changement d'appartement et que le nouvel appart est indisponible
+      if (!existAppartement) {
+        await session.abortTransaction();
+        session.endSession();
+        return res.status(404).json({ message: "Appartement non trouvé" });
+      }
+
+      // Vérification si changement d'appartement et que le nouvel appart est indisponible
 
       if (existAppartement.isAvailable === false) {
         await session.abortTransaction();
         session.endSession();
-        return res.status(400).json({ message: "Cette Appartement n'est pas disponible" });
+        return res
+          .status(400)
+          .json({ message: "Cette Appartement n'est pas disponible" });
       }
-}
-
- 
-// ----------------------------------------------
-// ---------- RENTAL
-// ---------------------------------------------- 
- 
-
-  
-const existingRental = await Rental.findOne({
-  appartement: req.body.appartement,
-  $or:[
-    {
-      rentalDate: { $lte:endDate},
-      rentalEndDate: {$gte: startDate},
     }
-  ]
-}).session(session);
 
+    // ----------------------------------------------
+    // ---------- RENTAL
+    // ----------------------------------------------
 
-if(existingRental && existingRental.statut === 'en cours'){
-  await   session.abortTransaction()
-  session.endSession()
-  return res.status(400).json({message: `Cette Appartement est reservée du: ${new Date(existingRental.rentalDate).toLocaleDateString('fr-Fr')} au  ${new Date(existingRental.rentalEndDate).toLocaleDateString('fr-Fr')}`})
-}
+    const existingRental = await Rental.findOne({
+      appartement: req.body.appartement,
+      $or: [
+        {
+          rentalDate: { $lte: endDate },
+          rentalEndDate: { $gte: startDate },
+        },
+      ],
+    }).session(session);
 
-
+    if (existingRental && existingRental.statut === "en cours") {
+      await session.abortTransaction();
+      session.endSession();
+      return res
+        .status(400)
+        .json({
+          message: `Cette Appartement est reservée du: ${new Date(existingRental.rentalDate).toLocaleDateString("fr-Fr")} au  ${new Date(existingRental.rentalEndDate).toLocaleDateString("fr-Fr")}`,
+        });
+    }
 
     // Mise à jour du contrat
     const updatedContrat = await Contrat.findByIdAndUpdate(
@@ -153,24 +156,23 @@ if(existingRental && existingRental.statut === 'en cours'){
         runValidators: true,
         context: "query",
         session,
-      }
+      },
     );
-
 
     if (req.body.appartement !== oldContrat.appartement.toString()) {
       await Appartement.findByIdAndUpdate(
         oldContrat.appartement,
         { isAvailable: true },
-        { session }
+        { session },
       );
-    
+
       await Appartement.findByIdAndUpdate(
         updatedContrat.appartement,
         { isAvailable: false },
-        { session }
+        { session },
       );
-    } 
-    
+    }
+
     await session.commitTransaction();
     session.endSession();
 
@@ -183,164 +185,164 @@ if(existingRental && existingRental.statut === 'en cours'){
   }
 };
 
-
-
-
 // Renouveller le Contrat
 exports.reloadContrat = async (req, res) => {
-  const session = await mongoose.startSession()
-  session.startTransaction()
+  const session = await mongoose.startSession();
+  session.startTransaction();
   try {
-    
-    const startDate = new Date(req.body.startDate)
-    const endDate = new Date(req.body.endDate)
-    
-    
-    const oldContrat = await Contrat.findById(req.body.contrat).session(session);
+    const startDate = new Date(req.body.startDate);
+    const endDate = new Date(req.body.endDate);
 
-    if(!oldContrat){
-      await session.abortTransaction()
-      session.endSession()
-      return res.status(404).json({message: "Contrat introuvable"})
+    const oldContrat = await Contrat.findById(req.body.contrat).session(
+      session,
+    );
+
+    if (!oldContrat) {
+      await session.abortTransaction();
+      session.endSession();
+      return res.status(404).json({ message: "Contrat introuvable" });
     }
 
- 
-    const appartement = await Appartement.findById(req.body.appartement).session(session)
+    const appartement = await Appartement.findById(
+      req.body.appartement,
+    ).session(session);
 
-  
- 
-    if(appartement && appartement.isAvailable === false){
-      await session.abortTransaction()
-      session.endSession()
-      return res.status(400).json({message: "Cette Appartement n'est pas disponible"})
+    if (appartement && appartement.isAvailable === false) {
+      await session.abortTransaction();
+      session.endSession();
+      return res
+        .status(400)
+        .json({ message: "Cette Appartement n'est pas disponible" });
     }
 
+    // ----------------------------------------------
+    // ---------- RENTAL
+    // ----------------------------------------------
 
+    const existingRental = await Rental.findOne({
+      appartement: req.body.appartement,
+      $or: [
+        {
+          rentalDate: { $lte: endDate },
+          rentalEndDate: { $gte: startDate },
+        },
+      ],
+    }).session(session);
 
-// ----------------------------------------------
-// ---------- RENTAL
-// ---------------------------------------------- 
- 
-
-  
-const existingRental = await Rental.findOne({
-  appartement: req.body.appartement,
-  $or:[
-    {
-      rentalDate: { $lte:endDate},
-      rentalEndDate: {$gte: startDate},
+    if (existingRental && existingRental.statut === "en cours") {
+      await session.abortTransaction();
+      session.endSession();
+      return res
+        .status(400)
+        .json({
+          message: `Cette Appartement est reservée du: ${new Date(existingRental.rentalDate).toLocaleDateString("fr-Fr")} au  ${new Date(existingRental.rentalEndDate).toLocaleDateString("fr-Fr")}`,
+        });
     }
-  ]
-}).session(session);
 
-
-if(existingRental && existingRental.statut === 'en cours'){
-  await   session.abortTransaction()
-  session.endSession()
-  return res.status(400).json({message: `Cette Appartement est reservée du: ${new Date(existingRental.rentalDate).toLocaleDateString('fr-Fr')} au  ${new Date(existingRental.rentalEndDate).toLocaleDateString('fr-Fr')}`})
-}
-
-
-  
-      const newContrat = await Contrat.create(
-        [
-          {
-      statut: true,
-      user: req.user.id,
-      ...req.body,
-    }
-  ],
-    {session},
-  );
-     // Mettre l'appartement en indisponible
+    const newContrat = await Contrat.create(
+      [
+        {
+          statut: true,
+          user: req.user.id,
+          ...req.body,
+        },
+      ],
+      { session },
+    );
+    // Mettre l'appartement en indisponible
     await Appartement.findByIdAndUpdate(
       req.body.appartement,
       { isAvailable: false },
-      { new: true,session }
+      { new: true, session },
     );
- 
-    await session.commitTransaction()
-    session.endSession()
+
+    await session.commitTransaction();
+    session.endSession();
     return res.status(201).json(newContrat);
   } catch (e) {
-    console.log(e)
-    await session.abortTransaction()
-    session.endSession()
+    console.log(e);
+    await session.abortTransaction();
+    session.endSession();
     return res.status(409).json({
-      status: 'Erreur',
+      status: "Erreur",
       message: e.message,
     });
-    
   }
 };
 
-
-
 // Stoper Le Contrat
-exports.stopContrat = async (req, res)=>{
-  const session = await mongoose.startSession()
-  session.startTransaction()
-  try{
+exports.stopContrat = async (req, res) => {
+  const session = await mongoose.startSession();
+  session.startTransaction();
+  try {
     if (!req.body._id) {
-      await session.abortTransaction()
-      session.endSession()
+      await session.abortTransaction();
+      session.endSession();
       return res.status(400).json({ message: "ID du contrat manquant" });
     }
-    const selectedContrat = await Contrat.findById(req.body._id).session(session)
+    const selectedContrat = await Contrat.findById(req.body._id).session(
+      session,
+    );
 
-    if(!selectedContrat){
-      await session.abortTransaction()
-      session.endSession()
-      return res.status(404).json({message: "Contrat Introuvable"})
+    if (!selectedContrat) {
+      await session.abortTransaction();
+      session.endSession();
+      return res.status(404).json({ message: "Contrat Introuvable" });
     }
 
-    const apparts = await Appartement.findOne({_id:selectedContrat?.appartement}).session(session)
+    const apparts = await Appartement.findOne({
+      _id: selectedContrat?.appartement,
+    }).session(session);
 
-    
-    if(!apparts){
-      await session.abortTransaction()
-      session.endSession()
-      return res.status(404).json({message: "Appartement Introuvable"})
+    if (!apparts) {
+      await session.abortTransaction();
+      session.endSession();
+      return res.status(404).json({ message: "Appartement Introuvable" });
     }
 
-    await Appartement.findByIdAndUpdate(apparts?._id,{isAvailable: true},{session})
+    await Appartement.findByIdAndUpdate(
+      apparts?._id,
+      { isAvailable: true },
+      { session },
+    );
 
+    await Contrat.findByIdAndUpdate(
+      selectedContrat?._id,
+      { endDate: new Date(), statut: false },
+      { session },
+    );
 
-    await Contrat.findByIdAndUpdate(selectedContrat?._id,{endDate: new Date(), statut: false},{session});
-
-    await session.commitTransaction()
-    session.endSession()
+    await session.commitTransaction();
+    session.endSession();
 
     return res.status(200).json({ message: "Contrat stoppé avec succès" });
-
-  }catch(error){
-    console.log(error)
-    await session.abortTransaction()
-    session.endSession()
-    return res.status(500).json({message: error})
+  } catch (error) {
+    console.log(error);
+    await session.abortTransaction();
+    session.endSession();
+    return res.status(500).json({ message: error });
   }
-}
-
+};
 
 // Obtenir tous les Contrat
 exports.getAllContrat = async (req, res) => {
-  const session = await mongoose.startSession()
-  session.startTransaction()
+  const session = await mongoose.startSession();
+  session.startTransaction();
   try {
     const contrat = await Contrat.find()
-    .populate('client')
-      .populate('appartement')
-      .populate({path:'appartement', populate:'secteur'})
-      .populate('user')
-      .sort({ startDate: -1, statut:-1 })
+      .populate("client")
+      .populate("appartement")
+      .populate({ path: "appartement", populate: "secteur" })
+      .populate("user")
+      .sort({ startDate: -1, statut: -1 })
       .session(session);
 
-      await session.commitTransaction()
-      session.endSession()
+    await session.commitTransaction();
+    session.endSession();
     return res.status(200).json(contrat);
   } catch (error) {
-    await session.abortTransaction()
-    session.endSession()
+    await session.abortTransaction();
+    session.endSession();
     return res.status(404).json({ message: error });
   }
 };
@@ -357,15 +359,17 @@ exports.getContratsBySecteur = async (req, res) => {
     const secteurId = req.params.id;
 
     const appartements = await Appartement.find({ secteur: secteurId })
-      .select('_id')
+      .select("_id")
       .exec();
     const appartementIds = appartements.map((a) => a._id);
 
-    const contrats = await Contrat.find({ appartement: { $in: appartementIds } })
-      .populate('client')
-      .populate('appartement')
-      .populate({ path: 'appartement', populate: 'secteur' })
-      .populate('user')
+    const contrats = await Contrat.find({
+      appartement: { $in: appartementIds },
+    })
+      .populate("client")
+      .populate("appartement")
+      .populate({ path: "appartement", populate: "secteur" })
+      .populate("user")
       .sort({ startDate: -1, statut: -1 });
 
     return res.status(200).json(contrats);
@@ -382,57 +386,62 @@ exports.getContratsBySecteur = async (req, res) => {
 exports.getContratsBySecteurPaged = async (req, res) => {
   try {
     const secteurId = req.params.id;
-    const page = Math.max(parseInt(req.query.page || '1', 10), 1);
-    const limit = Math.min(Math.max(parseInt(req.query.limit || '20', 10), 1), 100);
-    const searchRaw = String(req.query.search || '').trim();
+    const page = Math.max(parseInt(req.query.page || "1", 10), 1);
+    const limit = Math.min(
+      Math.max(parseInt(req.query.limit || "20", 10), 1),
+      100,
+    );
+    const searchRaw = String(req.query.search || "").trim();
 
     const pipeline = [
       // Join client
       {
         $lookup: {
-          from: 'clients',
-          localField: 'client',
-          foreignField: '_id',
-          as: 'clientDoc',
+          from: "clients",
+          localField: "client",
+          foreignField: "_id",
+          as: "clientDoc",
         },
       },
-      { $unwind: { path: '$clientDoc', preserveNullAndEmptyArrays: true } },
+      { $unwind: { path: "$clientDoc", preserveNullAndEmptyArrays: true } },
       // Join appartement
       {
         $lookup: {
-          from: 'appartements',
-          localField: 'appartement',
-          foreignField: '_id',
-          as: 'appartementDoc',
+          from: "appartements",
+          localField: "appartement",
+          foreignField: "_id",
+          as: "appartementDoc",
         },
       },
-      { $unwind: { path: '$appartementDoc', preserveNullAndEmptyArrays: true } },
+      {
+        $unwind: { path: "$appartementDoc", preserveNullAndEmptyArrays: true },
+      },
       // Join secteur
       {
         $lookup: {
-          from: 'secteurs',
-          localField: 'appartementDoc.secteur',
-          foreignField: '_id',
-          as: 'secteurDoc',
+          from: "secteurs",
+          localField: "appartementDoc.secteur",
+          foreignField: "_id",
+          as: "secteurDoc",
         },
       },
-      { $unwind: { path: '$secteurDoc', preserveNullAndEmptyArrays: true } },
+      { $unwind: { path: "$secteurDoc", preserveNullAndEmptyArrays: true } },
       // Filtre secteur (clé de la page)
-      { $match: { 'secteurDoc._id': new mongoose.Types.ObjectId(secteurId) } },
+      { $match: { "secteurDoc._id": new mongoose.Types.ObjectId(secteurId) } },
     ];
 
     if (searchRaw) {
       pipeline.push({
         $match: {
           $or: [
-            { 'clientDoc.firstName': { $regex: searchRaw, $options: 'i' } },
-            { 'clientDoc.lastName': { $regex: searchRaw, $options: 'i' } },
+            { "clientDoc.firstName": { $regex: searchRaw, $options: "i" } },
+            { "clientDoc.lastName": { $regex: searchRaw, $options: "i" } },
             {
               $expr: {
                 $regexMatch: {
-                  input: { $toString: '$clientDoc.phoneNumber' },
+                  input: { $toString: "$clientDoc.phoneNumber" },
                   regex: searchRaw,
-                  options: 'i',
+                  options: "i",
                 },
               },
             },
@@ -446,19 +455,19 @@ exports.getContratsBySecteurPaged = async (req, res) => {
       // IMPORTANT: éviter $project mixant inclusion/exclusion
       {
         $addFields: {
-          client: '$clientDoc',
+          client: "$clientDoc",
           appartement: {
-            $mergeObjects: ['$appartementDoc', { secteur: '$secteurDoc' }],
+            $mergeObjects: ["$appartementDoc", { secteur: "$secteurDoc" }],
           },
         },
       },
-      { $unset: ['clientDoc', 'appartementDoc', 'secteurDoc'] },
+      { $unset: ["clientDoc", "appartementDoc", "secteurDoc"] },
       {
         $facet: {
-          meta: [{ $count: 'total' }],
+          meta: [{ $count: "total" }],
           items: [{ $skip: (page - 1) * limit }, { $limit: limit }],
         },
-      }
+      },
     );
 
     const result = await Contrat.aggregate(pipeline);
@@ -494,10 +503,10 @@ exports.getContratCount = async (req, res) => {
 exports.getActiveContrats = async (req, res) => {
   try {
     const contrats = await Contrat.find({ statut: true })
-      .populate('client')
-      .populate('appartement')
-      .populate({ path: 'appartement', populate: 'secteur' })
-      .populate('user')
+      .populate("client")
+      .populate("appartement")
+      .populate({ path: "appartement", populate: "secteur" })
+      .populate("user")
       .sort({ startDate: -1 });
 
     return res.status(200).json(contrats);
@@ -514,49 +523,54 @@ exports.getActiveContrats = async (req, res) => {
 // NB: on garde une forme de données compatible avec l'affichage existant.
 exports.getContratsPaged = async (req, res) => {
   try {
-    const page = Math.max(parseInt(req.query.page || '1', 10), 1);
-    const limit = Math.min(Math.max(parseInt(req.query.limit || '20', 10), 1), 100);
-    const searchRaw = String(req.query.search || '').trim();
+    const page = Math.max(parseInt(req.query.page || "1", 10), 1);
+    const limit = Math.min(
+      Math.max(parseInt(req.query.limit || "20", 10), 1),
+      100,
+    );
+    const searchRaw = String(req.query.search || "").trim();
 
     const pipeline = [
       // Join client
       {
         $lookup: {
-          from: 'clients',
-          localField: 'client',
-          foreignField: '_id',
-          as: 'clientDoc',
+          from: "clients",
+          localField: "client",
+          foreignField: "_id",
+          as: "clientDoc",
         },
       },
-      { $unwind: { path: '$clientDoc', preserveNullAndEmptyArrays: true } },
+      { $unwind: { path: "$clientDoc", preserveNullAndEmptyArrays: true } },
       // Join appartement
       {
         $lookup: {
-          from: 'appartements',
-          localField: 'appartement',
-          foreignField: '_id',
-          as: 'appartementDoc',
+          from: "appartements",
+          localField: "appartement",
+          foreignField: "_id",
+          as: "appartementDoc",
         },
       },
-      { $unwind: { path: '$appartementDoc', preserveNullAndEmptyArrays: true } },
+      {
+        $unwind: { path: "$appartementDoc", preserveNullAndEmptyArrays: true },
+      },
       // Join secteur
       {
         $lookup: {
-          from: 'secteurs',
-          localField: 'appartementDoc.secteur',
-          foreignField: '_id',
-          as: 'secteurDoc',
+          from: "secteurs",
+          localField: "appartementDoc.secteur",
+          foreignField: "_id",
+          as: "secteurDoc",
         },
       },
-      { $unwind: { path: '$secteurDoc', preserveNullAndEmptyArrays: true } },
+      { $unwind: { path: "$secteurDoc", preserveNullAndEmptyArrays: true } },
       // Champs dates formatés pour recherche texte (proche du front)
       {
         $addFields: {
           startDateStr: {
-            $dateToString: { format: '%d/%m/%Y', date: '$startDate' },
+            $dateToString: { format: "%d/%m/%Y", date: "$startDate" },
           },
           endDateStr: {
-            $dateToString: { format: '%d/%m/%Y', date: '$endDate' },
+            $dateToString: { format: "%d/%m/%Y", date: "$endDate" },
           },
         },
       },
@@ -566,38 +580,38 @@ exports.getContratsPaged = async (req, res) => {
       pipeline.push({
         $match: {
           $or: [
-            { 'clientDoc.firstName': { $regex: searchRaw, $options: 'i' } },
-            { 'clientDoc.lastName': { $regex: searchRaw, $options: 'i' } },
+            { "clientDoc.firstName": { $regex: searchRaw, $options: "i" } },
+            { "clientDoc.lastName": { $regex: searchRaw, $options: "i" } },
             {
               $expr: {
                 $regexMatch: {
-                  input: { $toString: '$clientDoc.phoneNumber' },
+                  input: { $toString: "$clientDoc.phoneNumber" },
                   regex: searchRaw,
-                  options: 'i',
+                  options: "i",
                 },
               },
             },
             {
               $expr: {
                 $regexMatch: {
-                  input: { $toString: '$amount' },
+                  input: { $toString: "$amount" },
                   regex: searchRaw,
-                  options: 'i',
+                  options: "i",
                 },
               },
             },
             {
               $expr: {
                 $regexMatch: {
-                  input: { $toString: '$totalAmount' },
+                  input: { $toString: "$totalAmount" },
                   regex: searchRaw,
-                  options: 'i',
+                  options: "i",
                 },
               },
             },
-            { 'secteurDoc.adresse': { $regex: searchRaw, $options: 'i' } },
-            { startDateStr: { $regex: searchRaw, $options: 'i' } },
-            { endDateStr: { $regex: searchRaw, $options: 'i' } },
+            { "secteurDoc.adresse": { $regex: searchRaw, $options: "i" } },
+            { startDateStr: { $regex: searchRaw, $options: "i" } },
+            { endDateStr: { $regex: searchRaw, $options: "i" } },
           ],
         },
       });
@@ -609,19 +623,27 @@ exports.getContratsPaged = async (req, res) => {
       // IMPORTANT: éviter $project mixant inclusion/exclusion (MongoDB le refuse).
       {
         $addFields: {
-          client: '$clientDoc',
+          client: "$clientDoc",
           appartement: {
-            $mergeObjects: ['$appartementDoc', { secteur: '$secteurDoc' }],
+            $mergeObjects: ["$appartementDoc", { secteur: "$secteurDoc" }],
           },
         },
       },
-      { $unset: ['clientDoc', 'appartementDoc', 'secteurDoc', 'startDateStr', 'endDateStr'] },
+      {
+        $unset: [
+          "clientDoc",
+          "appartementDoc",
+          "secteurDoc",
+          "startDateStr",
+          "endDateStr",
+        ],
+      },
       {
         $facet: {
-          meta: [{ $count: 'total' }],
+          meta: [{ $count: "total" }],
           items: [{ $skip: (page - 1) * limit }, { $limit: limit }],
         },
-      }
+      },
     );
 
     const result = await Contrat.aggregate(pipeline);
@@ -639,91 +661,95 @@ exports.getContratsPaged = async (req, res) => {
 exports.getContrat = async (req, res) => {
   try {
     const contrat = await Contrat.findById(req.params.id)
-    .populate('client')
-    .populate('appartement')
-      .populate({path:'appartement', populate:'secteur'})
-    .populate('user');
-
+      .populate("client")
+      .populate("appartement")
+      .populate({ path: "appartement", populate: "secteur" })
+      .populate("user");
 
     if (!contrat)
       return res
         .status(404)
-        .json({ status: 'error', message: 'contrat non trouvé' });
-
+        .json({ status: "error", message: "contrat non trouvé" });
 
     res.status(200).json(contrat);
   } catch (err) {
-    return res.status(400).json({ status: 'error', message: err.message });
+    return res.status(400).json({ status: "error", message: err.message });
   }
 };
 
 // Supprimer un Contrat
 exports.deleteContrat = async (req, res) => {
   try {
-    const session = await mongoose.startSession()
+    const session = await mongoose.startSession();
     session.startTransaction();
-  const contrat=  await Contrat.findByIdAndDelete(req.params.id,{session});
+    const contrat = await Contrat.findByIdAndDelete(req.params.id, { session });
+
+ const paiements = await Paiement.findOne({ contrat: contrat._id }).session(
+      session,
+    );
+
+    if (paiements) {
+      await session.abortTransaction();
+      session.endSession();
+      return res.status(400).json({
+        status: "error",
+        message:
+          "Impossible de supprimer ce contrat car il est lié à un ou plusieurs paiements.",
+      });
+    }
+    
 
     await Appartement.findByIdAndUpdate(
-     contrat.appartement._id,
+      contrat.appartement._id,
       { isAvailable: true },
-      { new: true ,session}
+      { new: true, session },
     );
-const paiements = await Paiement.find({contrat: contrat._id}).session(session);
+   
 
-if(paiements){
-    for(const pai of paiements){
-      await Paiement.findByIdAndDelete(pai._id,{session});
-    }
-    }
-
-await session.commitTransaction();
-session.endSession();
+    await session.commitTransaction();
+    session.endSession();
     return res
       .status(200)
-      .json({ status: 'success', message: 'Contrat supprimé avec succès' });
+      .json({ status: "success", message: "Contrat supprimé avec succès" });
   } catch (err) {
     session.abortTransaction();
     session.endSession();
-    return res.status(400).json({ status: 'error', message: err.message });
+    return res.status(400).json({ status: "error", message: err.message });
   }
 };
-
-
 
 exports.refrechContrats = async (req, res, next) => {
   try {
     const contrats = await Contrat.find()
-    .populate('client')
-      .populate('appartement')
-      .populate({path:'appartement', populate:'secteur'})
-      .populate('user');
+      .populate("client")
+      .populate("appartement")
+      .populate({ path: "appartement", populate: "secteur" })
+      .populate("user");
     // On verifie pour chaque CONTRAT si endDate est Inférieure à la date actuelle
     // Alors on met isAvailable à true pour l'appartement concerné
     for (const contrat of contrats) {
       const today = new Date();
       today.setHours(0, 0, 0, 0); // ignore l'heure pour comparer juste les jours
-    
+
       const endDate = new Date(contrat.endDate);
       endDate.setHours(0, 0, 0, 0);
-    
+
       if (contrat.statut && endDate <= today) {
-
         // Mettre le Statut de Contrat à FIN "false"
-        await Contrat.findByIdAndUpdate(contrat._id,{statut: false});
+        await Contrat.findByIdAndUpdate(contrat._id, { statut: false });
 
-       // Mettre l'appartement Disponible
- await Appartement.findByIdAndUpdate(
-  contrat.appartement._id,
-  { isAvailable: true },
-  { new: true }
-);
+        // Mettre l'appartement Disponible
+        await Appartement.findByIdAndUpdate(
+          contrat.appartement._id,
+          { isAvailable: true },
+          { new: true },
+        );
       }
     }
-   next()
+    next();
   } catch (e) {
     return res.status(500).json({
-      status: 'error',
+      status: "error",
       message: "Erreur lors de la l'actualisation des Clients",
       error: e.message,
     });

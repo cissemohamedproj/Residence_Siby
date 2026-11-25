@@ -1,5 +1,6 @@
 const Appartement = require('../models/AppartementModel');
 const Contrat = require('../models/ContratModel');
+const Rental = require('../models/RentalModel');
 const mongoose = require('mongoose');
 
 
@@ -329,6 +330,23 @@ exports.getAppartementsPaged = async (req, res) => {
 // Supprimer un Produit
 exports.deleteAppartement = async (req, res) => {
   try {
+    // vérifier si l'appartement est lié à un contrat
+    const contrat = await Contrat.findOne({ appartement: req.params.id });
+    if (contrat) {
+      return res.status(400).json({
+        status: 'error',
+        message: 'Impossible de supprimer cet appartement car il est lié à un contrat.',
+      });
+    }
+
+    const  rental = await Rental.findOne({ appartement: req.params.id });
+    if (rental) {
+      return res.status(400).json({
+        status: 'error',
+        message: 'Impossible de supprimer cet appartement car il est lié à une réservation.',
+      });
+    }
+
     await Appartement.findByIdAndDelete(req.params.id);
     return res
       .status(200)

@@ -1,7 +1,7 @@
 {
   "name": "residence-siby",
   "version": "1.0.0",
-  "description": "projet de gestion d'ecole",
+  "description": "projet de gestion des appartements de la residence siby",
   "homepage": "https://github.com/McOriginal/Residence_Siby#readme",
   "bugs": {
     "url": "https://github.com/McOriginal/Residence_Siby/issues"
@@ -16,7 +16,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node api.js && nodemon server.js"
+    "start": "nodemon server.js"
   },
   "dependencies": {
     "bcrypt": "^6.0.0",
