@@ -147,7 +147,9 @@ export default function ContractDocument() {
                   </p>
                   <p>
                     <strong> N° de Pièce: </strong>
-                    {formatPhoneNumber(selectedContrat?.client?.pieceNumber) ||
+                    {
+                      selectedContrat?.client?.pieceNumber
+                     ||
                       '--------'}
                   </p>
                 </div>
